@@ -76,13 +76,15 @@ export function ChampionCelebration({
   // Argentina custom GIFs
   const argGifs = useMemo(() => {
     if (champion.abbr !== 'ARG') return []
-    return Array.from({ length: 30 }).map((_, i) => ({
+    const count = 15 // reduced from 30
+    const colWidth = 100 / count
+    return Array.from({ length: count }).map((_, i) => ({
       id: i,
       url: ARG_GIFS[Math.floor(Math.random() * ARG_GIFS.length)],
-      left: Math.random() * 100, // % width
-      duration: 6 + Math.random() * 8, // 6s to 14s (slow)
-      delay: Math.random() * 8,
-      size: 70 + Math.random() * 80, // 70px to 150px
+      left: (i * colWidth) + (Math.random() * (colWidth * 0.8)), // evenly distribute across columns
+      duration: 8 + Math.random() * 10, // 8s to 18s (even slower)
+      delay: Math.random() * 12, // more staggered delays
+      size: 80 + Math.random() * 60, // 80px to 140px
       rotation: -45 + Math.random() * 90,
     }))
   }, [champion.abbr])
