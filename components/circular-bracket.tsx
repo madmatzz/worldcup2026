@@ -11,6 +11,7 @@ import {
   type MatchTeam,
 } from '@/lib/teams'
 import { detectLocale, getTranslations, teamName, type Locale } from '@/lib/i18n'
+import { ChampionCelebration } from './champion-celebration'
 
 const REFRESH_MS = 5_000
 const SIZE = 1000
@@ -652,6 +653,11 @@ export function CircularBracket() {
           </div>
         )}
       </footer>
+
+      {/* Champion celebration popup */}
+      {data?.champion && (
+        <ChampionCelebration champion={data.champion} locale={locale} />
+      )}
     </div>
   )
 }
