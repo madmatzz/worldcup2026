@@ -244,7 +244,9 @@ export function CircularBracket() {
               <animate attributeName="r" values="450;0" dur="4s" repeatCount="indefinite" />
               <stop offset="0%" stopColor="#fef08a" stopOpacity="0" />
               <stop offset="75%" stopColor="#fef08a" stopOpacity="0" />
-              <stop offset="92%" stopColor="#fef08a" stopOpacity="0.8" />
+              <stop offset="92%" stopColor="#fef08a">
+                <animate attributeName="stop-opacity" values="0; 0.8; 0.8; 0" keyTimes="0; 0.2; 0.8; 1" dur="4s" repeatCount="indefinite" />
+              </stop>
               <stop offset="100%" stopColor="#fef08a" stopOpacity="0" />
             </radialGradient>
           </defs>
