@@ -487,27 +487,27 @@ export function CircularBracket() {
       </ul>
 
       {/* Settings Footer */}
-      <footer className="mt-6 flex w-full flex-wrap items-center justify-center gap-8 border-t border-border pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <label htmlFor="locale-select" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.language}</label>
+      <footer className="mt-8 flex w-full flex-wrap items-center justify-center gap-6 border-t border-border/40 pt-4 pb-2">
+        <div className="flex items-center gap-2 opacity-60 transition-opacity hover:opacity-100">
+          <label htmlFor="locale-select" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">{t.language}</label>
           <select 
             id="locale-select" 
             value={locale} 
             onChange={(e) => setLocale(e.target.value as Locale)}
-            className="rounded-md border border-border bg-card px-2 py-1.5 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+            className="cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-2 text-xs font-medium text-muted-foreground outline-none focus:text-foreground"
           >
             <option value="es">Español</option>
             <option value="en">English</option>
           </select>
         </div>
         {userTimezone && (
-          <div className="flex items-center gap-3">
-            <label htmlFor="tz-select" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.timezone}</label>
+          <div className="flex items-center gap-2 opacity-60 transition-opacity hover:opacity-100">
+            <label htmlFor="tz-select" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">{t.timezone}</label>
             <select 
               id="tz-select" 
               value={userTimezone} 
               onChange={(e) => setUserTimezone(e.target.value)}
-              className="max-w-[200px] rounded-md border border-border bg-card px-2 py-1.5 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-ring sm:max-w-[250px]"
+              className="max-w-[150px] cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-2 text-xs font-medium text-muted-foreground outline-none focus:text-foreground sm:max-w-[200px]"
             >
               {Intl.supportedValuesOf('timeZone').map(tz => (
                 <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
