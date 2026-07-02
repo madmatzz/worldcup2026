@@ -149,8 +149,15 @@ export function ChampionCelebration({
           90% { opacity: 1; }
           100% { transform: translateY(120vh); opacity: 0; }
         }
+        @keyframes sway {
+          0%, 100% { transform: rotate(-15deg); }
+          50% { transform: rotate(15deg); }
+        }
         .animate-fall-slow {
           animation: fall-slow linear infinite;
+        }
+        .animate-sway {
+          animation: sway 4s ease-in-out infinite;
         }
       `}</style>
 
@@ -181,16 +188,18 @@ export function ChampionCelebration({
                 animationDelay: `${gif.delay}s`,
               }}
             >
-              <img
-                src={gif.url}
-                alt=""
-                style={{
-                  width: `${gif.size}px`,
-                  height: 'auto',
-                  transform: `rotate(${gif.rotation}deg)`,
-                }}
-                className="rounded-lg shadow-2xl drop-shadow-xl"
-              />
+              <div style={{ transform: `rotate(${gif.rotation}deg)` }}>
+                <img
+                  src={gif.url}
+                  alt=""
+                  style={{
+                    width: `${gif.size}px`,
+                    height: 'auto',
+                    animationDelay: `${gif.delay}s`,
+                  }}
+                  className="animate-sway rounded-lg shadow-2xl drop-shadow-xl"
+                />
+              </div>
             </div>
           ))}
         </div>
