@@ -105,17 +105,14 @@ export function ChampionCelebration({
   }, [colors])
 
   useEffect(() => {
-    if (dismissed) return
     particlesRef.current = createParticles(colors, 120)
     animRef.current = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animRef.current)
-  }, [dismissed, animate, colors])
-
-  if (dismissed) return null
+  }, [animate, colors])
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700 pointer-events-none ${
         visible ? 'opacity-100' : 'opacity-0'
       }`}
     >
@@ -127,52 +124,56 @@ export function ChampionCelebration({
       />
 
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={() => setDismissed(true)}
-      />
+      {!dismissed && (
+        <div
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm pointer-events-auto"
+          onClick={() => setDismissed(true)}
+        />
+      )}
 
       {/* Popup */}
-      <div className="relative z-10 mx-4 flex max-w-md flex-col items-center gap-6 rounded-2xl border border-yellow-500/30 bg-gradient-to-b from-yellow-950/90 via-card/95 to-card/95 p-8 shadow-2xl shadow-yellow-500/20 sm:p-10">
-        {/* Trophy */}
-        <img
-          src="https://cdn-img.zerozero.pt/img/logos/edicoes/176026_imgbank_.png"
-          alt="World Cup Trophy"
-          className="h-24 w-auto object-contain drop-shadow-[0_0_30px_rgba(251,191,36,0.5)]"
-        />
-
-        {/* Title */}
-        <h2 className="text-center text-sm font-bold uppercase tracking-[0.3em] text-yellow-400">
-          {locale === 'es' ? '¡Campeón del Mundo!' : 'World Champion!'}
-        </h2>
-
-        {/* Flag + Name */}
-        <div className="flex flex-col items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      {!dismissed && (
+        <div className="relative z-10 mx-4 flex max-w-md flex-col items-center gap-6 rounded-2xl border border-yellow-500/30 bg-gradient-to-b from-yellow-950/90 via-card/95 to-card/95 p-8 shadow-2xl shadow-yellow-500/20 sm:p-10 pointer-events-auto">
+          {/* Trophy */}
           <img
-            src={flag}
-            alt={name}
-            className="h-28 w-28 rounded-full object-cover shadow-lg ring-4 ring-yellow-500/40"
+            src="https://cdn-img.zerozero.pt/img/logos/edicoes/176026_imgbank_.png"
+            alt="World Cup Trophy"
+            className="h-24 w-auto object-contain drop-shadow-[0_0_30px_rgba(251,191,36,0.5)]"
           />
-          <p className="text-center text-3xl font-extrabold tracking-wide text-foreground sm:text-4xl">
-            {name}
-          </p>
-          <p className="text-center text-sm text-muted-foreground">
-            {locale === 'es'
-              ? 'Copa del Mundo FIFA 2026'
-              : '2026 FIFA World Cup'}
-          </p>
-        </div>
 
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={() => setDismissed(true)}
-          className="mt-2 rounded-full border border-border bg-card/80 px-6 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
-        >
-          {locale === 'es' ? 'Cerrar' : 'Close'}
-        </button>
-      </div>
+          {/* Title */}
+          <h2 className="text-center text-sm font-bold uppercase tracking-[0.3em] text-yellow-400">
+            {locale === 'es' ? '¡Campeón del Mundo!' : 'World Champion!'}
+          </h2>
+
+          {/* Flag + Name */}
+          <div className="flex flex-col items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={flag}
+              alt={name}
+              className="h-28 w-28 rounded-full object-cover shadow-lg ring-4 ring-yellow-500/40"
+            />
+            <p className="text-center text-3xl font-extrabold tracking-wide text-foreground sm:text-4xl">
+              {name}
+            </p>
+            <p className="text-center text-sm text-muted-foreground">
+              {locale === 'es'
+                ? 'Copa del Mundo FIFA 2026'
+                : '2026 FIFA World Cup'}
+            </p>
+          </div>
+
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={() => setDismissed(true)}
+            className="mt-2 rounded-full border border-border bg-card/80 px-6 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+          >
+            {locale === 'es' ? 'Cerrar' : 'Close'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
