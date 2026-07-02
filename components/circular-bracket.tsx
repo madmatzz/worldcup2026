@@ -134,6 +134,21 @@ export function CircularBracket() {
 
   const slots = useMemo(() => (data ? toSlots(data.rounds) : null), [data])
 
+  const todayMatches = useMemo(() => {
+    if (!data || !userTimezone) return []
+    const tz = userTimezone || 'UTC'
+    try {
+      const nowStr = new Date().toLocaleDateString('en-US', { timeZone: tz })
+      const allMatches = data.rounds.flat()
+      return allMatches.filter(m => {
+        const matchStr = new Date(m.date).toLocaleDateString('en-US', { timeZone: tz })
+        return matchStr === nowStr
+      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    } catch {
+      return []
+    }
+  }, [data, userTimezone])
+
   const geometry = useMemo(() => {
     const connectors: string[] = []
     for (let r = 0; r < 4; r++) {
@@ -512,6 +527,74 @@ export function CircularBracket() {
         </div>
         )
       })()}
+
+      {/* Matches Today */}
+      {todayMatches.length > 0 && (
+        <section className="flex w-full max-w-4xl flex-col gap-4 px-4 py-8">
+          <h2 className="text-center text-xl font-bold tracking-widest text-foreground uppercase">
+            {t.matchesToday}
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {todayMatches.map((match) => {
+              const isLive = match.status === 'live'
+              return (
+                <div
+                  key={match.id}
+                  className={`flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50 ${
+                    selected?.id === match.id ? 'border-primary ring-1 ring-primary' : 'border-border'
+                  }`}
+                  onClick={() => setSelected(match)}
+                >
+                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    <span>
+                      {isLive ? (
+                        <span className="flex items-center gap-1.5 text-green-500">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
+                          {t.live}{match.clock ? ` (${match.clock})` : ''}
+                        </span>
+                      ) : match.status === 'finished' ? (
+                        match.statusText
+                      ) : (
+                        formatKickoff(match.date, locale, userTimezone || undefined)
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {[match.home, match.away].map((team, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={team ? flagUrl(team.flag, 80) : '/placeholder.svg'}
+                            className={`h-6 w-6 rounded-full object-cover ${
+                              match.status === 'finished' && team && !team.winner
+                                ? 'opacity-40 saturate-50'
+                                : ''
+                            }`}
+                            alt=""
+                          />
+                          <span
+                            className={`text-sm font-medium ${
+                              match.status === 'finished' && team && team.winner
+                                ? 'text-foreground font-bold'
+                                : 'text-muted-foreground'
+                            }`}
+                          >
+                            {displayTeamName(team, locale, t.tbd)}
+                          </span>
+                        </div>
+                        <span className="font-mono font-bold text-foreground tabular-nums">
+                          {match.status !== 'scheduled' && team?.score != null ? team.score : '-'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Legend */}
       <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
