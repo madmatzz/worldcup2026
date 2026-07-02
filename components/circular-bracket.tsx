@@ -221,24 +221,41 @@ export function CircularBracket() {
           ))}
 
           <defs>
-            <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#fef08a" stopOpacity="1">
-                <animate attributeName="stop-opacity" values="1;0.7;1" dur="4s" repeatCount="indefinite" />
-              </stop>
-              <stop offset="40%" stopColor="#fbbf24" stopOpacity="0.8">
-                <animate attributeName="offset" values="30%;50%;30%" dur="4s" repeatCount="indefinite" />
-              </stop>
+            {/* Static base glow (brightness near the cup) */}
+            <radialGradient id="baseGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#fef08a" stopOpacity="1" />
+              <stop offset="40%" stopColor="#fbbf24" stopOpacity="0.7" />
               <stop offset="100%" stopColor="#d97706" stopOpacity="0.15" />
+            </radialGradient>
+
+            {/* Traveling wave of light (moves towards the cup) */}
+            <radialGradient id="travelingLight" cx="50%" cy="50%">
+              <animate attributeName="r" values="100%;0%" dur="2.5s" repeatCount="indefinite" />
+              <stop offset="0%" stopColor="#fef08a" stopOpacity="0" />
+              <stop offset="50%" stopColor="#fef08a" stopOpacity="0" />
+              <stop offset="85%" stopColor="#fef08a" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#fef08a" stopOpacity="0" />
             </radialGradient>
           </defs>
 
-          {/* animated gradient connectors */}
+          {/* Base glow connectors */}
           {geometry.connectors.map((d, i) => (
             <path
-              key={`conn-${i}`}
+              key={`base-${i}`}
               d={d}
               fill="none"
-              stroke="url(#glowGradient)"
+              stroke="url(#baseGlow)"
+              strokeWidth={1.2}
+            />
+          ))}
+
+          {/* Animated moving light connectors */}
+          {geometry.connectors.map((d, i) => (
+            <path
+              key={`anim-${i}`}
+              d={d}
+              fill="none"
+              stroke="url(#travelingLight)"
               strokeWidth={1.2}
             />
           ))}
