@@ -261,8 +261,31 @@ export function CircularBracket() {
     return { connectors }
   }, [])
 
-  const liveCount =
-    activeData?.rounds.flat().filter((m) => m.status === 'live').length ?? 0
+  const liveCount = activeData?.rounds.flat().filter((m) => m.status === 'live').length ?? 0
+
+  const todayStatusElement = useMemo(() => {
+    if (!activeData || !userTimezone) return null
+    if (todayMatches.length === 0) return <span>{t.noMatchesToday}</span>
+
+    const upcomingCount = todayMatches.filter(m => m.status === 'scheduled').length
+
+    if (liveCount > 0) {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+          </span>
+          <span className="text-accent">{t.liveMatchNotice(liveCount)}</span>
+          {upcomingCount > 0 && <span> • {t.matchesLeftToday(upcomingCount)}</span>}
+        </div>
+      )
+    }
+
+    if (upcomingCount > 0) return <span>{t.matchesLeftToday(upcomingCount)}</span>
+
+    return <span>{t.allMatchesFinished}</span>
+  }, [activeData, userTimezone, todayMatches, liveCount, t])
 
   return (
     <div className="relative z-10 flex w-full flex-col items-center gap-6">
@@ -296,12 +319,11 @@ export function CircularBracket() {
             {error && !data ? t.liveDataUnavailable : t.liveData}
           </p>
         </div>
-        {liveCount > 0 && (
-          <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-card px-4 py-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-accent" aria-hidden="true" />
-            <p className="text-sm font-medium text-foreground">
-              {t.matchesInPlay(liveCount)}
-            </p>
+        
+        {/* Today status summary */}
+        {todayStatusElement && (
+          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground">
+            {todayStatusElement}
           </div>
         )}
         
