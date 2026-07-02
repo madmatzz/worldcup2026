@@ -294,13 +294,13 @@ export function CircularBracket() {
 
     if (liveCount > 0) {
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-green-500">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </span>
-          <span className="text-accent">{t.liveMatchNotice(liveCount)}</span>
-          {upcomingCount > 0 && <span> • {t.matchesLeftToday(upcomingCount)}</span>}
+          <span className="font-semibold">{t.liveMatchNotice(liveCount)}</span>
+          {upcomingCount > 0 && <span className="text-muted-foreground font-normal"> • {t.matchesLeftToday(upcomingCount)}</span>}
         </div>
       )
     }
