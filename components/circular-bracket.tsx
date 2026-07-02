@@ -252,7 +252,7 @@ export function CircularBracket() {
     activeData?.rounds.flat().filter((m) => m.status === 'live').length ?? 0
 
   return (
-    <div className="flex w-full flex-col items-center gap-6">
+    <div className="relative z-10 flex w-full flex-col items-center gap-6">
       {/* Title */}
       <header className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-3xl md:text-5xl font-bold tracking-widest text-foreground">
