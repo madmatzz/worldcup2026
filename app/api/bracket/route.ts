@@ -322,17 +322,69 @@ export async function GET() {
       
       // If we successfully found and ordered all 16 matches
       if (customRounds[0].length === 16) {
-        // For the subsequent rounds, we just use the chronological placeholders.
-        // Because our custom R32 layout completely violates the original ESPN mock tree,
-        // we must erase the pre-populated 'home' and 'away' teams from inner rounds
-        // so that random flags don't show up in unrelated branches. The UI's simulation
-        // will properly populate them when the user clicks Simulate.
+        // Build rounds 1 to 4 bottom-up to ensure visual lines trace actual ESPN branches.
+        // This preserves pre-populated winners in ESPN's mock when they correctly map to our custom tree.
+        const originalPools = rounds.map(r => [...r].sort((a,b) => Number(a.id) - Number(b.id)))
+        const remainingPools = rounds.map(r => [...r].sort((a,b) => Number(a.id) - Number(b.id)))
+        
         for (let r = 1; r < 5; r++) {
-          customRounds[r] = [...rounds[r]].sort((a, b) => Number(a.id) - Number(b.id)).map(m => ({
-            ...m,
-            home: null,
-            away: null
-          }))
+          const childRoundLabel = ROUND_DISPLAY_NAMES[r - 1]
+          
+          for (let i = 0; i < customRounds[r - 1].length / 2; i++) {
+            const childHome = customRounds[r - 1][i * 2]
+            const childAway = customRounds[r - 1][i * 2 + 1]
+            
+            const childHomeNum = originalPools[r - 1].findIndex(m => m.id === childHome.id) + 1
+            const childAwayNum = originalPools[r - 1].findIndex(m => m.id === childAway.id) + 1
+            
+            const childTeams = [
+              childHome.home?.abbr, childHome.away?.abbr,
+              childAway.home?.abbr, childAway.away?.abbr
+            ].filter(Boolean)
+            
+            // Try to find parent by matching BOTH sides (either by explicit match number or actual team)
+            const parentIdx = remainingPools[r].findIndex(p => {
+               const hNum = extractFeederMatchNumber(p.homeDisplayName, childRoundLabel)
+               const aNum = extractFeederMatchNumber(p.awayDisplayName, childRoundLabel)
+               
+               const hasHomeMatch = (hNum === childHomeNum || hNum === childAwayNum) || (p.home?.abbr && childTeams.includes(p.home.abbr))
+               const hasAwayMatch = (aNum === childHomeNum || aNum === childAwayNum) || (p.away?.abbr && childTeams.includes(p.away.abbr))
+               
+               return hasHomeMatch && hasAwayMatch
+            })
+            
+            let parentMatch: BracketMatch;
+            if (parentIdx !== -1) {
+               parentMatch = remainingPools[r].splice(parentIdx, 1)[0]
+               
+               // Swap if necessary to align branches
+               const hNum = extractFeederMatchNumber(parentMatch.homeDisplayName, childRoundLabel)
+               const aNum = extractFeederMatchNumber(parentMatch.awayDisplayName, childRoundLabel)
+               
+               let shouldSwap = false;
+               if (hNum && aNum) {
+                  if (hNum === childAwayNum || aNum === childHomeNum) shouldSwap = true;
+               } else {
+                  const childHomeTeams = [childHome.home?.abbr, childHome.away?.abbr].filter(Boolean)
+                  const childAwayTeams = [childAway.home?.abbr, childAway.away?.abbr].filter(Boolean)
+                  if (parentMatch.home?.abbr && childAwayTeams.includes(parentMatch.home.abbr)) shouldSwap = true;
+                  else if (parentMatch.away?.abbr && childHomeTeams.includes(parentMatch.away.abbr)) shouldSwap = true;
+               }
+               
+               if (shouldSwap) {
+                  const t = parentMatch.home; parentMatch.home = parentMatch.away; parentMatch.away = t;
+                  const tId = parentMatch.homeTeamId; parentMatch.homeTeamId = parentMatch.awayTeamId; parentMatch.awayTeamId = tId;
+                  const tName = parentMatch.homeDisplayName; parentMatch.homeDisplayName = parentMatch.awayDisplayName; parentMatch.awayDisplayName = tName;
+               }
+            } else {
+               // Fallback: If ESPN's tree is completely incompatible with this pairing,
+               // we pick an arbitrary match but MUST CLEAR its teams so they don't randomly show up.
+               parentMatch = remainingPools[r].shift()!
+               parentMatch = { ...parentMatch, home: null, away: null }
+            }
+            
+            customRounds[r].push(parentMatch)
+          }
         }
         orderedRounds = customRounds
       }
