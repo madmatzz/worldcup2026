@@ -371,7 +371,7 @@ export function CircularBracket() {
                           preserveAspectRatio="xMidYMid slice"
                           className={isLoser ? 'opacity-40 saturate-50' : 'transition-opacity duration-300'}
                         >
-                          <title>{displayTeamName(team, locale, t.tbd)}</title>
+                          <title>{displayTeamName(team, locale, t.tbd)}{isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''}</title>
                         </image>
                       </g>
                     )
@@ -404,7 +404,14 @@ export function CircularBracket() {
           <div className="mb-4 flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
               {selected.status === 'live' ? (
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.live}</p>
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-green-500">
+                  {t.live}
+                  {selected.clock && (
+                    <span className="text-muted-foreground lowercase normal-case tracking-normal animate-pulse">
+                      ({selected.clock})
+                    </span>
+                  )}
+                </p>
               ) : selected.status === 'finished' ? (
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{selected.statusText}</p>
               ) : (

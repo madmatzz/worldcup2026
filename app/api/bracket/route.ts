@@ -96,6 +96,7 @@ function parseEvent(event: any): { round: number | null; match: BracketMatch } {
       comp.status?.type?.description ??
       event.status?.type?.description ??
       'Scheduled',
+    clock: state === 'in' ? (comp.status?.type?.shortDetail ?? comp.status?.displayClock ?? null) : null,
     home: parseTeam(home),
     away: parseTeam(away),
     homeAbbr: home?.team?.abbreviation ?? '',
