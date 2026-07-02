@@ -217,28 +217,18 @@ export function CircularBracket() {
                     if (!team) {
                       return (
                         <g
-                          key={`empty-${ri}-${j}`}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => setSelected(match)}
-                        >
-                          <circle
-                            cx={p.x}
-                            cy={p.y}
-                            r={r * 0.5}
-                            fill="var(--color-muted)"
-                            opacity={0.5}
-                          />
-                          <text
-                            x={p.x}
-                            y={p.y + 1}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            className="fill-[var(--color-muted-foreground)]"
-                            fontSize={r * 0.7}
-                          >
-                            ?
-                          </text>
-                        </g>
+                        key={`empty-${ri}-${j}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setSelected(match)}
+                      >
+                        <circle
+                          cx={p.x}
+                          cy={p.y}
+                          r={r * 0.5}
+                          fill="var(--color-muted)"
+                          opacity={0.5}
+                        />
+                      </g>
                       )
                     }
                     const flag = flagUrl(team.flag, 160)
