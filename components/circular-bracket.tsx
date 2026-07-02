@@ -616,7 +616,9 @@ export function CircularBracket() {
                     <img
                       src={flagUrl(team.flag, 80) || '/placeholder.svg'}
                       alt=""
-                      className="h-6 w-6 rounded-full object-cover"
+                      className={`h-6 w-6 rounded-full object-cover ${
+                        eliminatedTeams.has(team.abbr) ? 'saturate-[.10]' : ''
+                      }`}
                     />
                     <span
                       className={`text-sm ${team.winner ? 'font-bold text-foreground' : 'text-muted-foreground'}`}
@@ -714,8 +716,8 @@ export function CircularBracket() {
                           <img
                             src={team ? flagUrl(team.flag, 80) : '/placeholder.svg'}
                             className={`h-6 w-6 rounded-full object-cover ${
-                              match.status === 'finished' && team && !team.winner
-                                ? 'opacity-40 saturate-50'
+                              team && eliminatedTeams.has(team.abbr)
+                                ? 'saturate-[.10]'
                                 : ''
                             }`}
                             alt=""
