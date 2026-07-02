@@ -221,34 +221,24 @@ export function CircularBracket() {
           ))}
 
           <defs>
-            <radialGradient id="flowGradient" cx="50%" cy="50%">
-              <animate attributeName="r" values="120%;0%" dur="3s" repeatCount="indefinite" />
-              <stop offset="0%" stopColor="#fbbf24" stopOpacity="0" />
-              <stop offset="85%" stopColor="#fbbf24" stopOpacity="0" />
-              <stop offset="95%" stopColor="#fbbf24" stopOpacity="1" />
-              <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+            <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#fef08a" stopOpacity="1">
+                <animate attributeName="stop-opacity" values="1;0.7;1" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="40%" stopColor="#fbbf24" stopOpacity="0.8">
+                <animate attributeName="offset" values="30%;50%;30%" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stopColor="#d97706" stopOpacity="0.15" />
             </radialGradient>
           </defs>
-
-          {/* base connectors */}
-          {geometry.connectors.map((d, i) => (
-            <path
-              key={`base-${i}`}
-              d={d}
-              fill="none"
-              stroke="#fbbf24"
-              strokeOpacity={0.2}
-              strokeWidth={1.2}
-            />
-          ))}
 
           {/* animated gradient connectors */}
           {geometry.connectors.map((d, i) => (
             <path
-              key={`anim-${i}`}
+              key={`conn-${i}`}
               d={d}
               fill="none"
-              stroke="url(#flowGradient)"
+              stroke="url(#glowGradient)"
               strokeWidth={1.2}
             />
           ))}
