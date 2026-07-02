@@ -19,8 +19,8 @@ const CY = SIZE / 2
 
 // radius of each round's ring (round 0 = outer ring of 32 team slots)
 const RING_RADII = [440, 348, 262, 182, 108]
-// flag circle radius per round
-const NODE_RADII = [30, 21, 16, 13, 15]
+// flag circle radius per round - increased sizes for better mobile visibility
+const NODE_RADII = [42, 32, 26, 22, 24]
 
 function polar(angle: number, radius: number) {
   return {
@@ -165,9 +165,8 @@ export function CircularBracket() {
       </div>
 
       {/* Bracket */}
-      <div className="w-full max-w-[720px] overflow-x-auto pb-4">
-        <div className="relative min-w-[720px] md:min-w-0">
-          <svg
+      <div className="relative w-full max-w-[720px]">
+        <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className={`h-auto w-full transition-opacity duration-500 ${
               !data ? 'opacity-30' : 'opacity-100'
@@ -293,7 +292,6 @@ export function CircularBracket() {
               {data?.champion ? displayTeamName(data.champion, locale, t.tbd) : t.tbd}
             </p>
           </div>
-        </div>
       </div>
 
       {/* Selected match detail */}
