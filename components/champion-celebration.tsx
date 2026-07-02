@@ -76,16 +76,17 @@ export function ChampionCelebration({
   // Argentina custom GIFs
   const argGifs = useMemo(() => {
     if (champion.abbr !== 'ARG') return []
-    const count = 15 // reduced from 30
+    const count = 8 // strict amount of lanes
     const colWidth = 100 / count
     return Array.from({ length: count }).map((_, i) => ({
       id: i,
       url: ARG_GIFS[Math.floor(Math.random() * ARG_GIFS.length)],
-      left: (i * colWidth) + (Math.random() * (colWidth * 0.8)), // evenly distribute across columns
-      duration: 8 + Math.random() * 10, // 8s to 18s (even slower)
-      delay: Math.random() * 12, // more staggered delays
-      size: 80 + Math.random() * 60, // 80px to 140px
-      rotation: -45 + Math.random() * 90,
+      left: (i * colWidth) + 1, // Start 1% into the lane
+      duration: 8 + Math.random() * 8, // 8s to 16s
+      delay: Math.random() * 10,
+      // responsive size using clamp so it never exceeds the lane width
+      size: 'clamp(40px, 9vw, 110px)',
+      rotation: -30 + Math.random() * 60,
     }))
   }, [champion.abbr])
 
@@ -193,7 +194,7 @@ export function ChampionCelebration({
                   src={gif.url}
                   alt=""
                   style={{
-                    width: `${gif.size}px`,
+                    width: gif.size,
                     height: 'auto',
                     animationDelay: `${gif.delay}s`,
                   }}
