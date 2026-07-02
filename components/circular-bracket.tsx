@@ -12,7 +12,7 @@ import {
 } from '@/lib/teams'
 import { detectLocale, getTranslations, teamName, type Locale } from '@/lib/i18n'
 
-const REFRESH_MS = 60_000
+const REFRESH_MS = 5_000
 const SIZE = 1000
 const CX = SIZE / 2
 const CY = SIZE / 2
@@ -103,8 +103,17 @@ export function CircularBracket() {
     keepPreviousData: true,
   })
 
-  const [secondsLeft, setSecondsLeft] = useState(60)
-  const [selected, setSelected] = useState<BracketMatch | null>(null)
+  const [secondsLeft, setSecondsLeft] = useState(5)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  const selected = useMemo(() => {
+    if (!selectedId || !data) return null
+    for (const round of data.rounds) {
+      const match = round.find((m) => m.id === selectedId)
+      if (match) return match
+    }
+    return null
+  }, [selectedId, data])
   const [locale, setLocale] = useState<Locale>('en')
   const [userTimezone, setUserTimezone] = useState<string>('')
 
@@ -122,7 +131,7 @@ export function CircularBracket() {
 
   // countdown resets whenever fresh data arrives
   useEffect(() => {
-    if (data) setSecondsLeft(60)
+    if (data) setSecondsLeft(5)
   }, [data?.updatedAt]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -336,7 +345,7 @@ export function CircularBracket() {
                         <g
                         key={`empty-${ri}-${j}`}
                         style={{ cursor: 'pointer' }}
-                        onClick={() => setSelected(match)}
+                        onClick={() => setSelectedId(match.id)}
                       >
                         <circle
                           cx={p.x}
@@ -355,7 +364,7 @@ export function CircularBracket() {
                       <g
                         key={`team-${ri}-${j}`}
                         style={{ cursor: 'pointer' }}
-                        onClick={() => setSelected(match)}
+                        onClick={() => setSelectedId(match.id)}
                       >
                         {isLive && (
                           <g className="animate-pulse">
@@ -442,7 +451,7 @@ export function CircularBracket() {
             </div>
             <button
               type="button"
-              onClick={() => setSelected(null)}
+              onClick={() => setSelectedId(null)}
               className="mt-0.5 shrink-0 text-xs text-muted-foreground hover:text-foreground"
             >
               {t.close}
@@ -543,7 +552,7 @@ export function CircularBracket() {
                   className={`flex w-full sm:w-[320px] cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50 ${
                     selected?.id === match.id ? 'border-primary ring-1 ring-primary' : 'border-border'
                   }`}
-                  onClick={() => setSelected(match)}
+                  onClick={() => setSelectedId(match.id)}
                 >
                   <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                     <span>
