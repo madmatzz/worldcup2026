@@ -57,14 +57,37 @@ function scoreLabel(m: BracketMatch): string | null {
   return s
 }
 
-function formatKickoff(iso: string, locale: Locale): string {
+function formatKickoff(iso: string, locale: Locale, timeZone?: string): string {
   const l = locale === 'es' ? 'es-AR' : undefined
   return new Date(iso).toLocaleString(l, {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    timeZone,
   })
+}
+
+function getVenueTimezone(venue?: string): string | undefined {
+  if (!venue) return undefined
+  const v = venue.toLowerCase()
+  if (v.includes('bc place') || v.includes('vancouver')) return 'America/Vancouver'
+  if (v.includes('lumen') || v.includes('seattle')) return 'America/Los_Angeles'
+  if (v.includes('levi') || v.includes('francisco') || v.includes('clara')) return 'America/Los_Angeles'
+  if (v.includes('sofi') || v.includes('angeles') || v.includes('inglewood')) return 'America/Los_Angeles'
+  if (v.includes('akron') || v.includes('guadalajara')) return 'America/Mexico_City'
+  if (v.includes('bbva') || v.includes('monterrey')) return 'America/Monterrey'
+  if (v.includes('azteca') || v.includes('mexico city')) return 'America/Mexico_City'
+  if (v.includes('arrowhead') || v.includes('kansas')) return 'America/Chicago'
+  if (v.includes('at&t') || v.includes('dallas') || v.includes('arlington')) return 'America/Chicago'
+  if (v.includes('nrg') || v.includes('houston')) return 'America/Chicago'
+  if (v.includes('mercedes') || v.includes('atlanta')) return 'America/New_York'
+  if (v.includes('gillette') || v.includes('boston') || v.includes('foxborough')) return 'America/New_York'
+  if (v.includes('lincoln') || v.includes('philadelphia')) return 'America/New_York'
+  if (v.includes('hard rock') || v.includes('miami')) return 'America/New_York'
+  if (v.includes('metlife') || v.includes('new york') || v.includes('jersey')) return 'America/New_York'
+  if (v.includes('bmo') || v.includes('toronto')) return 'America/Toronto'
+  return undefined
 }
 
 /** Get a display name for a team, translated */
@@ -292,18 +315,27 @@ export function CircularBracket() {
         return (
         <div className="w-full max-w-lg rounded-xl border border-border bg-card p-4">
           {/* Header row */}
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {selected.status === 'live'
-                ? t.live
-                : selected.status === 'finished'
-                  ? selected.statusText
-                  : formatKickoff(selected.date, locale)}
-            </p>
+          <div className="mb-4 flex items-start justify-between gap-2">
+            <div className="flex flex-col gap-1">
+              {selected.status === 'live' ? (
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.live}</p>
+              ) : selected.status === 'finished' ? (
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{selected.statusText}</p>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-foreground">
+                    {formatKickoff(selected.date, locale, getVenueTimezone(selected.venue))} <span className="text-xs font-normal text-muted-foreground">({t.stadiumTime})</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatKickoff(selected.date, locale)} <span className="font-light">({t.yourLocalTime})</span>
+                  </p>
+                </>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              className="mt-0.5 shrink-0 text-xs text-muted-foreground hover:text-foreground"
             >
               {t.close}
             </button>

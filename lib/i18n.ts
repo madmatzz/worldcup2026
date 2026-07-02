@@ -9,6 +9,8 @@ const translations = {
     close: 'Close',
     tbd: 'TBD',
     live: 'Live',
+    stadiumTime: 'Stadium Time',
+    yourLocalTime: 'Your Local Time',
     roundLabels: [
       'Round of 32',
       'Round of 16',
@@ -60,6 +62,8 @@ const translations = {
     close: 'Cerrar',
     tbd: 'A definir',
     live: 'En vivo',
+    stadiumTime: 'Hora local del estadio',
+    yourLocalTime: 'Tu hora local',
     roundLabels: [
       'Dieciseisavos',
       'Octavos de final',
