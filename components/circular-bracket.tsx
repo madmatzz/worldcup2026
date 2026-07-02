@@ -221,6 +221,7 @@ export function CircularBracket() {
               stroke="#fbbf24"
               strokeOpacity={0.8}
               strokeWidth={1.2}
+              className="animate-flow"
             />
           ))}
 
