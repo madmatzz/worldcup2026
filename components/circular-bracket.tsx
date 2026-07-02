@@ -623,8 +623,8 @@ export function CircularBracket() {
             onChange={(e) => setLocale(e.target.value as Locale)}
             className="cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-2 text-xs font-medium text-muted-foreground outline-none focus:text-foreground"
           >
-            <option value="es">Español</option>
-            <option value="en">English</option>
+            <option value="es" className="bg-background text-foreground">Español</option>
+            <option value="en" className="bg-background text-foreground">English</option>
           </select>
         </div>
         {userTimezone && (
@@ -637,7 +637,7 @@ export function CircularBracket() {
               className="max-w-[150px] cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-2 text-xs font-medium text-muted-foreground outline-none focus:text-foreground sm:max-w-[200px]"
             >
               {Intl.supportedValuesOf('timeZone').map(tz => (
-                <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
+                <option key={tz} value={tz} className="bg-background text-foreground">{tz.replace(/_/g, ' ')}</option>
               ))}
             </select>
           </div>
