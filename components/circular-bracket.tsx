@@ -19,8 +19,8 @@ const CY = SIZE / 2
 
 // radius of each round's ring (round 0 = outer ring of 32 team slots)
 const RING_RADII = [440, 348, 262, 182, 108]
-// flag circle radius per round - increased sizes for better mobile visibility
-const NODE_RADII = [42, 32, 26, 22, 24]
+// flag circle radius per round
+const NODE_RADII = [36, 26, 21, 17, 19]
 
 function polar(angle: number, radius: number) {
   return {
