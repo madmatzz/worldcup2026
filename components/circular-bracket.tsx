@@ -499,7 +499,7 @@ export function CircularBracket() {
                           height={r * 2}
                           clipPath={`url(#clip-${ri}-${j})`}
                           preserveAspectRatio="xMidYMid slice"
-                          className={isLoser ? 'opacity-40 saturate-50' : 'transition-opacity duration-300'}
+                          className={isLoser ? 'saturate-50 opacity-100' : 'transition-all duration-300'}
                         >
                           <title>{displayTeamName(team, locale, t.tbd)}{isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''}</title>
                         </image>
