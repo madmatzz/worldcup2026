@@ -4,6 +4,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { flagUrl, TEAM_INFO, type MatchTeam } from '@/lib/teams'
 import { teamName, type Locale } from '@/lib/i18n'
 
+const ARG_GIFS = [
+  'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZWg3dm5tY2I1dzc4dXZrdXU1Z203ODB2amFyeHFwNXIyZXQ0YWl5bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/WzR8zb0PN6bUmfz4DW/giphy.gif',
+  'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExazZmbndzdjY3aHo5M240dHE3Zmw4YmwyaXl3aDQ2MDloMHIyeGQzNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/dRcb3xrnZJQmPVnY2W/giphy.gif',
+  'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGZiM2ZwdWFnNzkxandmMDZnOHpzbjBzaXpseDNjb29qMWU0ZTFxcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gn0pkSGhtTNVFX8ME5/giphy.gif',
+  'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3h2Y3duOHZmYnc3ajY4MGkxZG41NGhmcWxtMmZmNWp2NmJkc25jYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LfetCRSOZi4ZXGvqfl/giphy.gif',
+  'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzduOXhyeWQ3bHdkbGxrcm96bjB6YnhzcTkyZjBlcWM2Y2o4cnBmNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ygNrcLsFcOymvmbXiJ/giphy.gif',
+  'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnd0aGhjdHg2b3BoMTRmMG01bHduYzZjc293YjNhdmI2Y203OWltbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/obBRY85qHrHIOX7TsF/giphy.gif'
+]
+
 type Particle = {
   x: number
   y: number
@@ -59,6 +68,20 @@ export function ChampionCelebration({
     return () => clearTimeout(t)
   }, [])
 
+  // Argentina custom GIFs
+  const argGifs = useMemo(() => {
+    if (champion.abbr !== 'ARG') return []
+    return Array.from({ length: 30 }).map((_, i) => ({
+      id: i,
+      url: ARG_GIFS[Math.floor(Math.random() * ARG_GIFS.length)],
+      left: Math.random() * 100, // % width
+      duration: 6 + Math.random() * 8, // 6s to 14s (slow)
+      delay: Math.random() * 8,
+      size: 70 + Math.random() * 80, // 70px to 150px
+      rotation: -45 + Math.random() * 90,
+    }))
+  }, [champion.abbr])
+
   // Confetti animation
   const animate = useCallback(() => {
     const canvas = canvasRef.current
@@ -112,6 +135,18 @@ export function ChampionCelebration({
 
   return (
     <>
+      <style>{`
+        @keyframes fall-slow {
+          0% { transform: translateY(-200px); opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateY(120vh); opacity: 0; }
+        }
+        .animate-fall-slow {
+          animation: fall-slow linear infinite;
+        }
+      `}</style>
+
       {/* Confetti canvas */}
       <canvas
         ref={canvasRef}
@@ -120,6 +155,39 @@ export function ChampionCelebration({
         }`}
         aria-hidden="true"
       />
+
+      {/* Argentina Special GIFs */}
+      {champion.abbr === 'ARG' && (
+        <div
+          className={`pointer-events-none fixed inset-0 z-[-1] overflow-hidden transition-opacity duration-1000 ${
+            visible ? 'opacity-100' : 'opacity-0'
+          }`}
+          aria-hidden="true"
+        >
+          {argGifs.map((gif) => (
+            <div
+              key={gif.id}
+              className="absolute top-[-200px] animate-fall-slow"
+              style={{
+                left: `${gif.left}%`,
+                animationDuration: `${gif.duration}s`,
+                animationDelay: `${gif.delay}s`,
+              }}
+            >
+              <img
+                src={gif.url}
+                alt=""
+                style={{
+                  width: `${gif.size}px`,
+                  height: 'auto',
+                  transform: `rotate(${gif.rotation}deg)`,
+                }}
+                className="rounded-lg shadow-2xl drop-shadow-xl"
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       <div
         className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700 pointer-events-none ${
