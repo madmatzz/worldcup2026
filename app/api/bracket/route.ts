@@ -161,9 +161,9 @@ function orderRounds(rounds: BracketMatch[][]): BracketMatch[][] {
 
   for (let r = 4; r >= 1; r--) {
     const parents = ordered[r]
-    // Sort child pool chronologically — ESPN match numbers correspond to this order
+    // Sort child pool by event ID — ESPN match numbers correspond to this order
     const pool = [...rounds[r - 1]].sort(
-      (a, b) => Date.parse(a.date) - Date.parse(b.date),
+      (a, b) => Number(a.id) - Number(b.id),
     )
     const used = new Set<string>()
     const next: BracketMatch[] = new Array(parents.length * 2)
