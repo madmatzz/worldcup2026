@@ -534,13 +534,13 @@ export function CircularBracket() {
           <h2 className="text-center text-xl font-bold tracking-widest text-foreground uppercase">
             {t.matchesToday}
           </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-wrap justify-center gap-4">
             {todayMatches.map((match) => {
               const isLive = match.status === 'live'
               return (
                 <div
                   key={match.id}
-                  className={`flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50 ${
+                  className={`flex w-full sm:w-[320px] cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50 ${
                     selected?.id === match.id ? 'border-primary ring-1 ring-primary' : 'border-border'
                   }`}
                   onClick={() => setSelected(match)}
