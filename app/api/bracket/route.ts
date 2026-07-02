@@ -290,7 +290,47 @@ export async function GET() {
     // Sanity check: expected 16 / 8 / 4 / 2 / 1
     const expected = [16, 8, 4, 2, 1]
     const valid = rounds.every((r, i) => r.length === expected[i])
-    const orderedRounds = valid ? orderRounds(rounds) : rounds
+    let orderedRounds = valid ? orderRounds(rounds) : rounds
+
+    // --- CUSTOM VISUAL OVERRIDE FOR WORLD CUP MOCK ---
+    if (valid) {
+      const CUSTOM_R32 = [
+        ['BRA', 'JPN'], ['CIV', 'NOR'], ['MEX', 'ECU'], ['ENG', 'COD'],
+        ['ARG', 'CPV'], ['AUS', 'EGY'], ['SUI', 'ALG'], ['COL', 'GHA'],
+        ['SEN', 'BEL'], ['BIH', 'USA'], ['AUT', 'ESP'], ['CRO', 'POR'],
+        ['MAR', 'NED'], ['CAN', 'RSA'], ['SWE', 'FRA'], ['PAR', 'GER']
+      ]
+      
+      const customRounds: BracketMatch[][] = [[], [], [], [], []]
+      const pool = [...rounds[0]]
+      for (const pair of CUSTOM_R32) {
+        const idx = pool.findIndex(m => 
+          (m.home?.abbr === pair[0] && m.away?.abbr === pair[1]) ||
+          (m.home?.abbr === pair[1] && m.away?.abbr === pair[0])
+        )
+        if (idx !== -1) {
+          const match = pool.splice(idx, 1)[0]
+          // Ensure the home/away orientation perfectly matches the visual circle
+          if (match.home?.abbr !== pair[0]) {
+            const t = match.home; match.home = match.away; match.away = t;
+            const tId = match.homeTeamId; match.homeTeamId = match.awayTeamId; match.awayTeamId = tId;
+            const tName = match.homeDisplayName; match.homeDisplayName = match.awayDisplayName; match.awayDisplayName = tName;
+          }
+          customRounds[0].push(match)
+        }
+      }
+      
+      // If we successfully found and ordered all 16 matches
+      if (customRounds[0].length === 16) {
+        // For the subsequent rounds, we just use the chronological placeholders.
+        // This ensures the visual lines don't cross and the simulation flows naturally
+        // from our custom R32 layout to the Final.
+        for (let r = 1; r < 5; r++) {
+          customRounds[r] = [...rounds[r]].sort((a, b) => Number(a.id) - Number(b.id))
+        }
+        orderedRounds = customRounds
+      }
+    }
 
     const final = orderedRounds[4][0]
     const champion =
