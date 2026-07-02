@@ -276,7 +276,7 @@ export function CircularBracket() {
 
     if (finalChampion) {
       recentChampions.push(finalChampion.abbr)
-      if (recentChampions.length > 5) recentChampions = recentChampions.slice(-5)
+      if (recentChampions.length > 10) recentChampions = recentChampions.slice(-10)
       try {
         localStorage.setItem('recentChampions', JSON.stringify(recentChampions))
       } catch (e) {
