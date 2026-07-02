@@ -166,6 +166,14 @@ export function CircularBracket() {
     if (!data) return
     const simRounds = JSON.parse(JSON.stringify(data.rounds)) as BracketMatch[][]
     let finalChampion: MatchTeam | null = null
+    
+    const getTeamStrength = (abbr: string) => {
+      const topTier = ['ARG', 'FRA', 'BRA', 'ESP', 'ENG']
+      const highTier = ['GER', 'POR', 'NED', 'BEL', 'URU', 'COL', 'ITA']
+      if (topTier.includes(abbr)) return 0.85
+      if (highTier.includes(abbr)) return 0.65
+      return 0.4
+    }
 
     for (let r = 0; r < 5; r++) {
       for (let i = 0; i < simRounds[r].length; i++) {
@@ -186,7 +194,10 @@ export function CircularBracket() {
         // Simulate match if no winner exists yet and both teams are known
         const hasWinner = match.status === 'finished' && (match.home?.winner || match.away?.winner)
         if (!hasWinner && match.home && match.away) {
-          const homeWins = Math.random() > 0.5
+          const homeStr = getTeamStrength(match.home.abbr)
+          const awayStr = getTeamStrength(match.away.abbr)
+          const homeWins = Math.random() < (homeStr / (homeStr + awayStr))
+          
           match.status = 'finished'
           match.statusText = 'Simulated'
           match.clock = null
@@ -283,7 +294,7 @@ export function CircularBracket() {
             }`}
           >
             <svg className={`h-4 w-4 ${simulatedData ? 'text-accent' : 'text-blue-500'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-            {t.simulateMatches}
+            {simulatedData ? t.reSimulateMatches : t.simulateMatches}
           </button>
           {simulatedData && (
             <button
@@ -737,7 +748,7 @@ export function CircularBracket() {
 
       {/* Champion celebration popup */}
       {activeData?.champion && (
-        <ChampionCelebration champion={activeData.champion} locale={locale} />
+        <ChampionCelebration key={activeData.updatedAt} champion={activeData.champion} locale={locale} />
       )}
     </div>
   )
