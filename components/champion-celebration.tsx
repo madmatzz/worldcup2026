@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { flagUrl, TEAM_INFO, type MatchTeam } from '@/lib/teams'
 import { teamName, type Locale } from '@/lib/i18n'
 
