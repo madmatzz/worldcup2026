@@ -241,7 +241,7 @@ export function CircularBracket() {
               cy={CY} 
               gradientUnits="userSpaceOnUse"
             >
-              <animate attributeName="r" values="320;0" dur="2.5s" repeatCount="indefinite" />
+              <animate attributeName="r" values="420;0" dur="3s" repeatCount="indefinite" />
               <stop offset="0%" stopColor="#fef08a" stopOpacity="0" />
               <stop offset="50%" stopColor="#fef08a" stopOpacity="0" />
               <stop offset="85%" stopColor="#fef08a" stopOpacity="0.7" />
