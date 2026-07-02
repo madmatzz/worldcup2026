@@ -129,6 +129,7 @@ export function CircularBracket() {
   }, [selectedId, activeData])
   const [locale, setLocale] = useState<Locale>('en')
   const [userTimezone, setUserTimezone] = useState<string>('')
+  const [hoverTooltip, setHoverTooltip] = useState<{ text: string, x: number, y: number } | null>(null)
 
   // detect locale on mount
   useEffect(() => {
@@ -536,8 +537,16 @@ export function CircularBracket() {
                         key={`team-${ri}-${j}`}
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelectedId(match.id)}
+                        onMouseEnter={(e) => {
+                          const rect = (e.currentTarget as SVGElement).getBoundingClientRect()
+                          setHoverTooltip({
+                            text: displayTeamName(team, locale, t.tbd) + (isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''),
+                            x: rect.left + rect.width / 2,
+                            y: rect.top - 8
+                          })
+                        }}
+                        onMouseLeave={() => setHoverTooltip(null)}
                       >
-                        <title>{displayTeamName(team, locale, t.tbd)}{isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''}</title>
                         {isLive && (
                           <g className="animate-pulse">
                             <circle cx={p.x} cy={p.y} r={r + 3} fill="none" stroke="#22c55e" strokeWidth={6} strokeOpacity={0.4} />
@@ -855,6 +864,20 @@ export function CircularBracket() {
       {/* Champion celebration popup */}
       {activeData?.champion && (
         <ChampionCelebration key={activeData.updatedAt} champion={activeData.champion} locale={locale} />
+      )}
+
+      {/* Custom Hover Tooltip */}
+      {hoverTooltip && (
+        <div 
+          className="pointer-events-none fixed z-50 rounded-lg bg-card/95 px-3 py-1.5 text-sm font-semibold text-foreground shadow-xl border border-border/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+          style={{ 
+            left: hoverTooltip.x, 
+            top: hoverTooltip.y,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          {hoverTooltip.text}
+        </div>
       )}
     </div>
   )
