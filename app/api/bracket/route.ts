@@ -166,14 +166,20 @@ function orderRounds(rounds: BracketMatch[][]): BracketMatch[][] {
       (a, b) => Date.parse(a.date) - Date.parse(b.date),
     )
     const used = new Set<string>()
-    const next: BracketMatch[] = []
-    const childRoundLabel = ROUND_DISPLAY_NAMES[r - 1] // e.g. for r=1 (R16), child is "round of 32"
+    const next: BracketMatch[] = new Array(parents.length * 2)
+    const childRoundLabel = ROUND_DISPLAY_NAMES[r - 1]
 
-    for (const parent of parents) {
-      for (const side of [
-        { team: parent.home, abbr: parent.homeAbbr, displayName: parent.homeDisplayName },
-        { team: parent.away, abbr: parent.awayAbbr, displayName: parent.awayDisplayName },
-      ]) {
+    for (let pi = 0; pi < parents.length; pi++) {
+      const parent = parents[pi]
+      const sides = [
+        { team: parent.home, abbr: parent.homeAbbr, displayName: parent.homeDisplayName, slot: pi * 2 },
+        { team: parent.away, abbr: parent.awayAbbr, displayName: parent.awayDisplayName, slot: pi * 2 + 1 },
+      ]
+
+      // Resolve each side independently, gathering candidates
+      const resolved: { slot: number; match: BracketMatch | undefined }[] = []
+
+      for (const side of sides) {
         let child: BracketMatch | undefined
 
         // 1. If it's a known real team, find the child match they played in
@@ -186,26 +192,76 @@ function orderRounds(rounds: BracketMatch[][]): BracketMatch[][] {
         }
 
         // 2. If still not found, try explicit match number from display name
-        //    e.g. "Round of 32 12 Winner" → child match #12 in chronological order
         if (!child && side.displayName && childRoundLabel) {
           const matchNum = extractFeederMatchNumber(side.displayName, childRoundLabel)
           if (matchNum !== null && matchNum >= 1 && matchNum <= pool.length) {
-            const target = pool[matchNum - 1] // 1-indexed → 0-indexed
+            const target = pool[matchNum - 1]
             if (!used.has(target.id)) {
               child = target
             }
           }
         }
 
-        // 3. Fallback to next unused chronological match
-        if (!child) child = pool.find((m) => !used.has(m.id))
+        resolved.push({ slot: side.slot, match: child })
+      }
 
-        if (child) {
-          used.add(child.id)
-          next.push(child)
+      // Check for conflict: both sides resolved to the same match
+      if (
+        resolved[0].match && resolved[1].match &&
+        resolved[0].match.id === resolved[1].match.id
+      ) {
+        // The real-team match takes priority on the side that has the real team
+        // The other side should use match-number or fallback
+        const side0HasTeam = !!sides[0].team
+        const side1HasTeam = !!sides[1].team
+        if (side0HasTeam && !side1HasTeam) {
+          // Re-resolve side 1 without the conflicting match
+          const conflictId = resolved[0].match.id
+          let alt: BracketMatch | undefined
+          if (sides[1].displayName && childRoundLabel) {
+            const matchNum = extractFeederMatchNumber(sides[1].displayName, childRoundLabel)
+            if (matchNum !== null && matchNum >= 1 && matchNum <= pool.length) {
+              const target = pool[matchNum - 1]
+              if (!used.has(target.id) && target.id !== conflictId) alt = target
+            }
+          }
+          if (!alt) alt = pool.find((m) => !used.has(m.id) && m.id !== conflictId)
+          resolved[1].match = alt
+        } else if (side1HasTeam && !side0HasTeam) {
+          const conflictId = resolved[1].match.id
+          let alt: BracketMatch | undefined
+          if (sides[0].displayName && childRoundLabel) {
+            const matchNum = extractFeederMatchNumber(sides[0].displayName, childRoundLabel)
+            if (matchNum !== null && matchNum >= 1 && matchNum <= pool.length) {
+              const target = pool[matchNum - 1]
+              if (!used.has(target.id) && target.id !== conflictId) alt = target
+            }
+          }
+          if (!alt) alt = pool.find((m) => !used.has(m.id) && m.id !== conflictId)
+          resolved[0].match = alt
+        }
+      }
+
+      // Place children and mark used
+      for (const { slot, match } of resolved) {
+        if (match) {
+          used.add(match.id)
+          next[slot] = match
         }
       }
     }
+
+    // Fill any remaining empty slots with unused matches (fallback)
+    for (let i = 0; i < next.length; i++) {
+      if (!next[i]) {
+        const fallback = pool.find((m) => !used.has(m.id))
+        if (fallback) {
+          used.add(fallback.id)
+          next[i] = fallback
+        }
+      }
+    }
+
     ordered[r - 1] = next
   }
   return ordered
