@@ -177,27 +177,29 @@ export function CircularBracket() {
               : '2026 World Cup knockout bracket, winners advancing toward the trophy at the center'}
           >
             {/* ring guides + connectors */}
-            {RING_RADII.map((r, i) => (
-              <circle
-                key={i}
-                cx={CX}
-                cy={CY}
-                r={r}
-                fill="none"
-                stroke="var(--color-border)"
-                strokeWidth={0.5}
-                strokeDasharray="3 5"
-              />
-            ))}
-            {geometry.connectors.map((d, i) => (
-              <path
-                key={i}
-                d={d}
-                fill="none"
-                stroke="white"
-                strokeWidth={1}
-              />
-            ))}
+          {RING_RADII.map((r, i) => (
+            <circle
+              key={i}
+              cx={CX}
+              cy={CY}
+              r={r}
+              fill="none"
+              stroke="#fbbf24"
+              strokeOpacity={0.15}
+              strokeWidth={0.5}
+              strokeDasharray="3 5"
+            />
+          ))}
+          {geometry.connectors.map((d, i) => (
+            <path
+              key={i}
+              d={d}
+              fill="none"
+              stroke="#fbbf24"
+              strokeOpacity={0.8}
+              strokeWidth={1.2}
+            />
+          ))}
 
             {data && slots && (
               <>
