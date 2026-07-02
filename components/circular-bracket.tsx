@@ -234,7 +234,20 @@ export function CircularBracket() {
               <stop offset="100%" stopColor="#d97706" stopOpacity="0.15" />
             </radialGradient>
 
-            {/* Traveling wave of light (moves towards the cup) */}
+            {/* Traveling wave of light mask (moves towards the cup) - MOBILE */}
+            <mask id="bracket-lines">
+              {geometry.connectors.map((d, i) => (
+                <path
+                  key={`mask-${i}`}
+                  d={d}
+                  fill="none"
+                  stroke="white"
+                  strokeWidth={1.2}
+                />
+              ))}
+            </mask>
+
+            {/* Traveling wave of light (moves towards the cup) - DESKTOP */}
             <radialGradient 
               id="travelingLight" 
               cx={CX} 
@@ -262,16 +275,31 @@ export function CircularBracket() {
             />
           ))}
 
-          {/* Animated moving light connectors */}
-          {geometry.connectors.map((d, i) => (
-            <path
-              key={`anim-${i}`}
-              d={d}
+          {/* Animated moving light connectors - DESKTOP */}
+          <g className="hidden md:inline">
+            {geometry.connectors.map((d, i) => (
+              <path
+                key={`anim-${i}`}
+                d={d}
+                fill="none"
+                stroke="url(#travelingLight)"
+                strokeWidth={1.2}
+              />
+            ))}
+          </g>
+
+          {/* Animated moving light masked by connectors - MOBILE */}
+          <g mask="url(#bracket-lines)" className="md:hidden">
+            <circle
+              cx={CX}
+              cy={CY}
+              r={450}
               fill="none"
-              stroke="url(#travelingLight)"
-              strokeWidth={1.2}
+              stroke="#fef08a"
+              strokeWidth={60}
+              className="origin-center animate-traveling-ring"
             />
-          ))}
+          </g>
 
             {data && slots && (
               <>
@@ -306,17 +334,25 @@ export function CircularBracket() {
                     }
                     const flag = flagUrl(team.flag, 160)
                     const isSelected = selected?.id === match.id
+                    const isLoser = match.status === 'finished' && !team.winner
+                    const isLive = match.status === 'live'
                     return (
                       <g
                         key={`team-${ri}-${j}`}
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelected(match)}
                       >
+                        {isLive && (
+                          <g className="animate-pulse">
+                            <circle cx={p.x} cy={p.y} r={r + 3} fill="none" stroke="#22c55e" strokeWidth={6} strokeOpacity={0.4} />
+                            <circle cx={p.x} cy={p.y} r={r + 3} fill="none" stroke="#22c55e" strokeWidth={2} />
+                          </g>
+                        )}
                         {isSelected && (
                           <circle
                             cx={p.x}
                             cy={p.y}
-                            r={r + 3}
+                            r={r + (isLive ? 7 : 3)}
                             fill="none"
                             stroke="white"
                             strokeWidth={2}
@@ -333,6 +369,7 @@ export function CircularBracket() {
                           height={r * 2}
                           clipPath={`url(#clip-${ri}-${j})`}
                           preserveAspectRatio="xMidYMid slice"
+                          className={isLoser ? 'opacity-40 saturate-50' : 'transition-opacity duration-300'}
                         >
                           <title>{displayTeamName(team, locale, t.tbd)}</title>
                         </image>

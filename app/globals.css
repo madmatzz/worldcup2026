@@ -167,3 +167,15 @@
     @apply font-sans;
   }
 }
+
+@keyframes traveling-ring {
+  0% { transform: scale(1); opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+.animate-traveling-ring {
+  animation: traveling-ring 4s infinite linear;
+  transform-origin: center;
+}
