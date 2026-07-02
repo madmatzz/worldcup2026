@@ -293,15 +293,20 @@ export function CircularBracket() {
     const upcomingCount = todayMatches.filter(m => m.status === 'scheduled').length
 
     if (liveCount > 0) {
+      const firstLive = activeData.rounds.flat().find((m) => m.status === 'live')
       return (
-        <div className="flex items-center gap-2 text-green-500">
+        <button 
+          type="button"
+          onClick={() => firstLive && setSelectedId(firstLive.id)}
+          className="flex items-center gap-2 text-green-500 hover:text-green-400 transition-colors"
+        >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </span>
           <span className="font-semibold">{t.liveMatchNotice(liveCount)}</span>
           {upcomingCount > 0 && <span className="text-muted-foreground font-normal"> • {t.matchesLeftToday(upcomingCount)}</span>}
-        </div>
+        </button>
       )
     }
 

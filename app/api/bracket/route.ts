@@ -383,6 +383,15 @@ export async function GET() {
                parentMatch = { ...parentMatch, home: null, away: null }
             }
             
+            // Crucial: Propagate real API mock winners if they exist.
+            // This ensures that even if we had to use a fallback match, the actual winners
+            // of the child matches correctly advance to the next round in our visual tree.
+            const homeWinner = childHome?.status === 'finished' ? (childHome.home?.winner ? childHome.home : (childHome.away?.winner ? childHome.away : null)) : null
+            const awayWinner = childAway?.status === 'finished' ? (childAway.home?.winner ? childAway.home : (childAway.away?.winner ? childAway.away : null)) : null
+            
+            if (homeWinner) parentMatch.home = { ...homeWinner, winner: false, score: null }
+            if (awayWinner) parentMatch.away = { ...awayWinner, winner: false, score: null }
+            
             customRounds[r].push(parentMatch)
           }
         }
