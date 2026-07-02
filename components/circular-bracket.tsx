@@ -383,6 +383,11 @@ export function CircularBracket() {
           ))}
 
           <defs>
+            {/* iOS Safari compatible desaturation filter for SVG images */}
+            <filter id="desaturate">
+              <feColorMatrix type="saturate" values="0.10" />
+            </filter>
+
             {/* Static base glow (brightness near the cup) */}
             <radialGradient 
               id="baseGlow" 
@@ -531,7 +536,8 @@ export function CircularBracket() {
                           height={r * 2}
                           clipPath={`url(#clip-${ri}-${j})`}
                           preserveAspectRatio="xMidYMid slice"
-                          className={isLoser ? 'saturate-[.10] opacity-100' : 'transition-all duration-300'}
+                          filter={isLoser ? 'url(#desaturate)' : undefined}
+                          className="transition-all duration-300"
                         >
                           <title>{displayTeamName(team, locale, t.tbd)}{isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''}</title>
                         </image>
