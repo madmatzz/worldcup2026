@@ -165,132 +165,134 @@ export function CircularBracket() {
       </div>
 
       {/* Bracket */}
-      <div className="relative w-full max-w-[720px]">
-        <svg
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className={`h-auto w-full transition-opacity duration-500 ${
-            !data ? 'opacity-30' : 'opacity-100'
-          }`}
-          role="img"
-          aria-label={locale === 'es'
-            ? 'Bracket eliminatorio de la Copa del Mundo 2026, los ganadores avanzan hacia el trofeo en el centro'
-            : '2026 World Cup knockout bracket, winners advancing toward the trophy at the center'}
-        >
-          {/* ring guides + connectors */}
-          {RING_RADII.map((r, i) => (
-            <circle
-              key={i}
-              cx={CX}
-              cy={CY}
-              r={r}
-              fill="none"
-              stroke="var(--color-border)"
-              strokeWidth={0.5}
-              strokeDasharray="3 5"
-            />
-          ))}
-          {geometry.connectors.map((d, i) => (
-            <path
-              key={i}
-              d={d}
-              fill="none"
-              stroke="var(--color-border)"
-              strokeWidth={0.7}
-            />
-          ))}
+      <div className="w-full max-w-[720px] overflow-x-auto pb-4">
+        <div className="relative min-w-[720px] md:min-w-0">
+          <svg
+            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            className={`h-auto w-full transition-opacity duration-500 ${
+              !data ? 'opacity-30' : 'opacity-100'
+            }`}
+            role="img"
+            aria-label={locale === 'es'
+              ? 'Bracket eliminatorio de la Copa del Mundo 2026, los ganadores avanzan hacia el trofeo en el centro'
+              : '2026 World Cup knockout bracket, winners advancing toward the trophy at the center'}
+          >
+            {/* ring guides + connectors */}
+            {RING_RADII.map((r, i) => (
+              <circle
+                key={i}
+                cx={CX}
+                cy={CY}
+                r={r}
+                fill="none"
+                stroke="var(--color-border)"
+                strokeWidth={0.5}
+                strokeDasharray="3 5"
+              />
+            ))}
+            {geometry.connectors.map((d, i) => (
+              <path
+                key={i}
+                d={d}
+                fill="none"
+                stroke="var(--color-border)"
+                strokeWidth={0.7}
+              />
+            ))}
 
-          {data && slots && (
-            <>
+            {data && slots && (
+              <>
 
-              {/* team / TBD slots per round */}
-              {slots.map((round, ri) =>
-                round.map((team, j) => {
-                  const n = round.length
-                  const angle = slotAngle(j, n)
-                  const p = polar(angle, RING_RADII[ri])
-                  const r = NODE_RADII[ri]
+                {/* team / TBD slots per round */}
+                {slots.map((round, ri) =>
+                  round.map((team, j) => {
+                    const n = round.length
+                    const angle = slotAngle(j, n)
+                    const p = polar(angle, RING_RADII[ri])
+                    const r = NODE_RADII[ri]
 
-                  // match index (2 slots per match)
-                  const mi = Math.floor(j / 2)
-                  const match = data.rounds[ri][mi]
+                    // match index (2 slots per match)
+                    const mi = Math.floor(j / 2)
+                    const match = data.rounds[ri][mi]
 
-                  if (!team) {
+                    if (!team) {
+                      return (
+                        <g
+                          key={`empty-${ri}-${j}`}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => setSelected(match)}
+                        >
+                          <circle
+                            cx={p.x}
+                            cy={p.y}
+                            r={r * 0.5}
+                            fill="var(--color-muted)"
+                            opacity={0.5}
+                          />
+                          <text
+                            x={p.x}
+                            y={p.y + 1}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-[var(--color-muted-foreground)]"
+                            fontSize={r * 0.7}
+                          >
+                            ?
+                          </text>
+                        </g>
+                      )
+                    }
+                    const flag = flagUrl(team.flag, 160)
+                    const isSelected = selected?.id === match.id
                     return (
                       <g
-                        key={`empty-${ri}-${j}`}
+                        key={`team-${ri}-${j}`}
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelected(match)}
                       >
-                        <circle
-                          cx={p.x}
-                          cy={p.y}
-                          r={r * 0.5}
-                          fill="var(--color-muted)"
-                          opacity={0.5}
-                        />
-                        <text
-                          x={p.x}
-                          y={p.y + 1}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          className="fill-[var(--color-muted-foreground)]"
-                          fontSize={r * 0.7}
+                        {isSelected && (
+                          <circle
+                            cx={p.x}
+                            cy={p.y}
+                            r={r + 3}
+                            fill="none"
+                            stroke="white"
+                            strokeWidth={2}
+                          />
+                        )}
+                        <clipPath id={`clip-${ri}-${j}`}>
+                          <circle cx={p.x} cy={p.y} r={r} />
+                        </clipPath>
+                        <image
+                          href={flag}
+                          x={p.x - r}
+                          y={p.y - r}
+                          width={r * 2}
+                          height={r * 2}
+                          clipPath={`url(#clip-${ri}-${j})`}
+                          preserveAspectRatio="xMidYMid slice"
                         >
-                          ?
-                        </text>
+                          <title>{displayTeamName(team, locale, t.tbd)}</title>
+                        </image>
                       </g>
                     )
-                  }
-                  const flag = flagUrl(team.flag, 160)
-                  const isSelected = selected?.id === match.id
-                  return (
-                    <g
-                      key={`team-${ri}-${j}`}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setSelected(match)}
-                    >
-                      {isSelected && (
-                        <circle
-                          cx={p.x}
-                          cy={p.y}
-                          r={r + 3}
-                          fill="none"
-                          stroke="white"
-                          strokeWidth={2}
-                        />
-                      )}
-                      <clipPath id={`clip-${ri}-${j}`}>
-                        <circle cx={p.x} cy={p.y} r={r} />
-                      </clipPath>
-                      <image
-                        href={flag}
-                        x={p.x - r}
-                        y={p.y - r}
-                        width={r * 2}
-                        height={r * 2}
-                        clipPath={`url(#clip-${ri}-${j})`}
-                        preserveAspectRatio="xMidYMid slice"
-                      >
-                        <title>{displayTeamName(team, locale, t.tbd)}</title>
-                      </image>
-                    </g>
-                  )
-                }),
-              )}
-            </>
-          )}
-        </svg>
+                  }),
+                )}
+              </>
+            )}
+          </svg>
 
-        {/* Center trophy + champion */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
-          <img
-            src="https://cdn-img.zerozero.pt/img/logos/edicoes/176026_imgbank_.png"
-            alt="World Cup trophy"
-            className="h-[13%] w-auto object-contain"
-          />
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground md:text-sm">
-            {data?.champion ? displayTeamName(data.champion, locale, t.tbd) : t.tbd}
-          </p>
+          {/* Center trophy + champion */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
+            <img
+              src="https://cdn-img.zerozero.pt/img/logos/edicoes/176026_imgbank_.png"
+              alt="World Cup trophy"
+              className="h-[13%] w-auto object-contain"
+            />
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground md:text-sm">
+              {data?.champion ? displayTeamName(data.champion, locale, t.tbd) : t.tbd}
+            </p>
+          </div>
         </div>
       </div>
 
