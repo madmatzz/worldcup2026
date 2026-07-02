@@ -106,15 +106,18 @@ export function CircularBracket() {
 
   const [secondsLeft, setSecondsLeft] = useState(5)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [simulatedData, setSimulatedData] = useState<BracketData | null>(null)
+
+  const activeData = simulatedData || data
 
   const selected = useMemo(() => {
-    if (!selectedId || !data) return null
-    for (const round of data.rounds) {
+    if (!selectedId || !activeData) return null
+    for (const round of activeData.rounds) {
       const match = round.find((m) => m.id === selectedId)
       if (match) return match
     }
     return null
-  }, [selectedId, data])
+  }, [selectedId, activeData])
   const [locale, setLocale] = useState<Locale>('en')
   const [userTimezone, setUserTimezone] = useState<string>('')
 
@@ -142,14 +145,14 @@ export function CircularBracket() {
     return () => clearInterval(id)
   }, [])
 
-  const slots = useMemo(() => (data ? toSlots(data.rounds) : null), [data])
+  const slots = useMemo(() => (activeData ? toSlots(activeData.rounds) : null), [activeData])
 
   const todayMatches = useMemo(() => {
-    if (!data || !userTimezone) return []
+    if (!activeData || !userTimezone) return []
     const tz = userTimezone || 'UTC'
     try {
       const nowStr = new Date().toLocaleDateString('en-US', { timeZone: tz })
-      const allMatches = data.rounds.flat()
+      const allMatches = activeData.rounds.flat()
       return allMatches.filter(m => {
         const matchStr = new Date(m.date).toLocaleDateString('en-US', { timeZone: tz })
         return matchStr === nowStr
@@ -157,7 +160,58 @@ export function CircularBracket() {
     } catch {
       return []
     }
-  }, [data, userTimezone])
+  }, [activeData, userTimezone])
+
+  const handleSimulate = () => {
+    if (!data) return
+    const simRounds = JSON.parse(JSON.stringify(data.rounds)) as BracketMatch[][]
+    let finalChampion: MatchTeam | null = null
+
+    for (let r = 0; r < 5; r++) {
+      for (let i = 0; i < simRounds[r].length; i++) {
+        const match = simRounds[r][i]
+        
+        // Propagate winners from previous round
+        if (r > 0) {
+          const childHome = simRounds[r - 1][i * 2]
+          const childAway = simRounds[r - 1][i * 2 + 1]
+          
+          const homeWinner = childHome?.home?.winner ? childHome.home : (childHome?.away?.winner ? childHome.away : null)
+          const awayWinner = childAway?.home?.winner ? childAway.home : (childAway?.away?.winner ? childAway.away : null)
+          
+          if (homeWinner) match.home = { ...homeWinner, winner: false, score: null }
+          if (awayWinner) match.away = { ...awayWinner, winner: false, score: null }
+        }
+        
+        // Simulate match if no winner exists yet and both teams are known
+        const hasWinner = match.status === 'finished' && (match.home?.winner || match.away?.winner)
+        if (!hasWinner && match.home && match.away) {
+          const homeWins = Math.random() > 0.5
+          match.status = 'finished'
+          match.statusText = 'Simulated'
+          match.clock = null
+          if (homeWins) {
+            match.home.winner = true
+            match.away.winner = false
+            match.home.score = Math.floor(Math.random() * 3) + 1
+            match.away.score = match.home.score - 1
+          } else {
+            match.home.winner = false
+            match.away.winner = true
+            match.away.score = Math.floor(Math.random() * 3) + 1
+            match.home.score = match.away.score - 1
+          }
+        }
+
+        // Check if this is the final match to set champion
+        if (r === 4) {
+          finalChampion = match.home?.winner ? match.home : (match.away?.winner ? match.away : null)
+        }
+      }
+    }
+    
+    setSimulatedData({ rounds: simRounds, champion: finalChampion, updatedAt: new Date().toISOString() })
+  }
 
   const geometry = useMemo(() => {
     const connectors: string[] = []
@@ -184,7 +238,7 @@ export function CircularBracket() {
   }, [])
 
   const liveCount =
-    data?.rounds.flat().filter((m) => m.status === 'live').length ?? 0
+    activeData?.rounds.flat().filter((m) => m.status === 'live').length ?? 0
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
@@ -216,6 +270,33 @@ export function CircularBracket() {
             </p>
           </div>
         )}
+        
+        {/* Simulation controls */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleSimulate}
+            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+              simulatedData 
+                ? 'border-accent/40 bg-card text-foreground hover:bg-accent/10'
+                : 'border-blue-500/40 bg-card text-foreground hover:bg-blue-500/10'
+            }`}
+          >
+            <svg className={`h-4 w-4 ${simulatedData ? 'text-accent' : 'text-blue-500'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            {t.simulateMatches}
+          </button>
+          {simulatedData && (
+            <button
+              type="button"
+              onClick={() => setSimulatedData(null)}
+              className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
+              title={t.clearSimulation}
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <span className="hidden sm:inline">{t.clearSimulation}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Bracket */}
@@ -223,7 +304,7 @@ export function CircularBracket() {
         <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className={`h-auto w-full transition-opacity duration-500 ${
-              !data ? 'opacity-30' : 'opacity-100'
+              !activeData ? 'opacity-30' : 'opacity-100'
             }`}
             role="img"
             aria-label={locale === 'es'
@@ -655,8 +736,8 @@ export function CircularBracket() {
       </footer>
 
       {/* Champion celebration popup */}
-      {data?.champion && (
-        <ChampionCelebration champion={data.champion} locale={locale} />
+      {activeData?.champion && (
+        <ChampionCelebration champion={activeData.champion} locale={locale} />
       )}
     </div>
   )
