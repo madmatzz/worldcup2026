@@ -161,6 +161,19 @@ export function CircularBracket() {
       return []
     }
   }, [activeData, userTimezone])
+  const eliminatedTeams = useMemo(() => {
+    const eliminated = new Set<string>()
+    if (!activeData) return eliminated
+    for (const round of activeData.rounds) {
+      for (const match of round) {
+        if (match.status === 'finished') {
+          if (match.home && match.home.winner === false) eliminated.add(match.home.abbr)
+          if (match.away && match.away.winner === false) eliminated.add(match.away.abbr)
+        }
+      }
+    }
+    return eliminated
+  }, [activeData])
 
   const handleSimulate = () => {
     if (!data) return
@@ -451,7 +464,7 @@ export function CircularBracket() {
                     }
                     const flag = flagUrl(team.flag, 160)
                     const isSelected = selected?.id === match.id
-                    const isLoser = match.status === 'finished' && !team.winner
+                    const isLoser = eliminatedTeams.has(team.abbr)
                     const isLive = match.status === 'live'
                     return (
                       <g
