@@ -226,9 +226,8 @@ export function CircularBracket() {
                         <circle
                           cx={p.x}
                           cy={p.y}
-                          r={r * 0.5}
+                          r={r}
                           fill="var(--color-muted)"
-                          opacity={0.5}
                         />
                       </g>
                       )
