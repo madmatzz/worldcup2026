@@ -323,10 +323,16 @@ export async function GET() {
       // If we successfully found and ordered all 16 matches
       if (customRounds[0].length === 16) {
         // For the subsequent rounds, we just use the chronological placeholders.
-        // This ensures the visual lines don't cross and the simulation flows naturally
-        // from our custom R32 layout to the Final.
+        // Because our custom R32 layout completely violates the original ESPN mock tree,
+        // we must erase the pre-populated 'home' and 'away' teams from inner rounds
+        // so that random flags don't show up in unrelated branches. The UI's simulation
+        // will properly populate them when the user clicks Simulate.
         for (let r = 1; r < 5; r++) {
-          customRounds[r] = [...rounds[r]].sort((a, b) => Number(a.id) - Number(b.id))
+          customRounds[r] = [...rounds[r]].sort((a, b) => Number(a.id) - Number(b.id)).map(m => ({
+            ...m,
+            home: null,
+            away: null
+          }))
         }
         orderedRounds = customRounds
       }
