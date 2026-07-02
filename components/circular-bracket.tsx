@@ -278,7 +278,7 @@ export function CircularBracket() {
       `}</style>
       {/* Title */}
       <header className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-3xl md:text-5xl font-bold tracking-widest bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-500 bg-[length:200%_auto] bg-clip-text text-transparent animate-shine">
+        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-widest bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-500 bg-[length:200%_auto] bg-clip-text text-transparent animate-shine">
           {t.pageTitle}
         </h1>
       </header>
