@@ -205,10 +205,11 @@ export function CircularBracket() {
     let finalChampion: MatchTeam | null = null
     
     const getTeamStrength = (abbr: string) => {
-      const topTier = ['ARG', 'FRA', 'BRA', 'ESP', 'ENG']
-      const highTier = ['GER', 'POR', 'NED', 'BEL', 'URU', 'COL', 'ITA']
-      if (topTier.includes(abbr)) return 0.85
-      if (highTier.includes(abbr)) return 0.65
+      // Unused now, keeping it commented out in case we want to revert
+      // const topTier = ['ARG', 'FRA', 'BRA', 'ESP', 'ENG']
+      // const highTier = ['GER', 'POR', 'NED', 'BEL', 'URU', 'COL', 'ITA']
+      // if (topTier.includes(abbr)) return 0.85
+      // if (highTier.includes(abbr)) return 0.65
       return 0.4
     }
 
@@ -231,9 +232,7 @@ export function CircularBracket() {
         // Simulate match if no winner exists yet and both teams are known
         const hasWinner = match.status === 'finished' && (match.home?.winner || match.away?.winner)
         if (!hasWinner && match.home && match.away) {
-          const homeStr = getTeamStrength(match.home.abbr)
-          const awayStr = getTeamStrength(match.away.abbr)
-          const homeWins = Math.random() < (homeStr / (homeStr + awayStr))
+          const homeWins = Math.random() < 0.5
           
           match.status = 'finished'
           match.statusText = 'Simulated'
