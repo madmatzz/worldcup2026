@@ -222,15 +222,26 @@ export function CircularBracket() {
 
           <defs>
             {/* Static base glow (brightness near the cup) */}
-            <radialGradient id="baseGlow" cx="50%" cy="50%" r="50%">
+            <radialGradient 
+              id="baseGlow" 
+              cx={CX} 
+              cy={CY} 
+              r={320} 
+              gradientUnits="userSpaceOnUse"
+            >
               <stop offset="0%" stopColor="#fef08a" stopOpacity="1" />
               <stop offset="40%" stopColor="#fbbf24" stopOpacity="0.7" />
               <stop offset="100%" stopColor="#d97706" stopOpacity="0.15" />
             </radialGradient>
 
             {/* Traveling wave of light (moves towards the cup) */}
-            <radialGradient id="travelingLight" cx="50%" cy="50%">
-              <animate attributeName="r" values="100%;0%" dur="2.5s" repeatCount="indefinite" />
+            <radialGradient 
+              id="travelingLight" 
+              cx={CX} 
+              cy={CY} 
+              gradientUnits="userSpaceOnUse"
+            >
+              <animate attributeName="r" values="320;0" dur="2.5s" repeatCount="indefinite" />
               <stop offset="0%" stopColor="#fef08a" stopOpacity="0" />
               <stop offset="50%" stopColor="#fef08a" stopOpacity="0" />
               <stop offset="85%" stopColor="#fef08a" stopOpacity="0.7" />
