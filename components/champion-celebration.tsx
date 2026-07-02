@@ -179,10 +179,10 @@ export function ChampionCelebration({
           }`}
           aria-hidden="true"
         >
-          {argGifs.map((gif) => (
+          {argGifs.map((gif, index) => (
             <div
               key={gif.id}
-              className="absolute top-[-200px] animate-fall-slow"
+              className={`absolute top-[-200px] animate-fall-slow ${index % 2 === 1 ? 'hidden md:block' : ''}`}
               style={{
                 left: `${gif.left}%`,
                 animationDuration: `${gif.duration}s`,
