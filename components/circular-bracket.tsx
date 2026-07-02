@@ -107,6 +107,15 @@ export function CircularBracket() {
   const [secondsLeft, setSecondsLeft] = useState(5)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [simulatedData, setSimulatedData] = useState<BracketData | null>(null)
+  const [viewDate, setViewDate] = useState<Date>(new Date())
+
+  const adjustViewDate = (days: number) => {
+    setViewDate(prev => {
+      const next = new Date(prev)
+      next.setDate(next.getDate() + days)
+      return next
+    })
+  }
 
   const activeData = simulatedData || data
 
@@ -161,6 +170,21 @@ export function CircularBracket() {
       return []
     }
   }, [activeData, userTimezone])
+
+  const visibleMatches = useMemo(() => {
+    if (!activeData || !userTimezone) return []
+    const tz = userTimezone || 'UTC'
+    try {
+      const viewStr = viewDate.toLocaleDateString('en-US', { timeZone: tz })
+      const allMatches = activeData.rounds.flat()
+      return allMatches.filter(m => {
+        const matchStr = new Date(m.date).toLocaleDateString('en-US', { timeZone: tz })
+        return matchStr === viewStr
+      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    } catch {
+      return []
+    }
+  }, [activeData, userTimezone, viewDate])
   const eliminatedTeams = useMemo(() => {
     const eliminated = new Set<string>()
     if (!activeData) return eliminated
@@ -683,16 +707,37 @@ export function CircularBracket() {
         )
       })()}
 
-      {/* Matches Today */}
-      {todayMatches.length > 0 && (
+      {/* Matches By Day */}
+      {activeData && (
         <section className="flex w-full max-w-4xl flex-col gap-4 px-4 py-8">
-          <h2 className="text-center text-xl font-bold tracking-widest text-foreground uppercase">
-            {t.matchesToday}
-          </h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {todayMatches.map((match) => {
-              const isLive = match.status === 'live'
-              return (
+          <div className="flex items-center justify-center gap-4">
+            <button 
+              onClick={() => adjustViewDate(-1)} 
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <h2 className="text-center text-xl font-bold tracking-widest text-foreground uppercase min-w-[200px]">
+              {(() => {
+                const tz = userTimezone || 'UTC'
+                const isToday = viewDate.toLocaleDateString('en-US', { timeZone: tz }) === new Date().toLocaleDateString('en-US', { timeZone: tz })
+                if (isToday) return t.matchesToday
+                return viewDate.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US', { month: 'short', day: 'numeric', timeZone: tz })
+              })()}
+            </h2>
+            <button 
+              onClick={() => adjustViewDate(1)} 
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </div>
+          
+          {visibleMatches.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-4">
+              {visibleMatches.map((match) => {
+                const isLive = match.status === 'live'
+                return (
                 <div
                   key={match.id}
                   className={`flex w-full sm:w-[320px] cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50 ${
@@ -745,9 +790,14 @@ export function CircularBracket() {
                     ))}
                   </div>
                 </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="mt-4 text-center text-muted-foreground">
+              {t.noMatchesToday}
+            </p>
+          )}
         </section>
       )}
 
