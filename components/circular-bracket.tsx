@@ -205,7 +205,7 @@ export function CircularBracket() {
               ? 'Bracket eliminatorio de la Copa del Mundo 2026, los ganadores avanzan hacia el trofeo en el centro'
               : '2026 World Cup knockout bracket, winners advancing toward the trophy at the center'}
           >
-            {/* ring guides + connectors */}
+            {/* ring guides */}
           {RING_RADII.map((r, i) => (
             <circle
               key={i}
@@ -219,15 +219,37 @@ export function CircularBracket() {
               strokeDasharray="3 5"
             />
           ))}
+
+          <defs>
+            <radialGradient id="flowGradient" cx="50%" cy="50%">
+              <animate attributeName="r" values="120%;0%" dur="3s" repeatCount="indefinite" />
+              <stop offset="0%" stopColor="#fbbf24" stopOpacity="0" />
+              <stop offset="85%" stopColor="#fbbf24" stopOpacity="0" />
+              <stop offset="95%" stopColor="#fbbf24" stopOpacity="1" />
+              <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          {/* base connectors */}
           {geometry.connectors.map((d, i) => (
             <path
-              key={i}
+              key={`base-${i}`}
               d={d}
               fill="none"
               stroke="#fbbf24"
-              strokeOpacity={0.8}
+              strokeOpacity={0.2}
               strokeWidth={1.2}
-              className="animate-flow"
+            />
+          ))}
+
+          {/* animated gradient connectors */}
+          {geometry.connectors.map((d, i) => (
+            <path
+              key={`anim-${i}`}
+              d={d}
+              fill="none"
+              stroke="url(#flowGradient)"
+              strokeWidth={1.2}
             />
           ))}
 
