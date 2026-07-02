@@ -506,7 +506,7 @@ export function CircularBracket() {
               className="h-[13%] w-auto object-contain"
             />
             <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground md:text-sm">
-              {data?.champion ? displayTeamName(data.champion, locale, t.tbd) : t.tbd}
+              {activeData?.champion ? displayTeamName(activeData.champion, locale, t.tbd) : t.tbd}
             </p>
           </div>
       </div>
