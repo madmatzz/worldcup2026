@@ -11,6 +11,8 @@ const translations = {
     live: 'Live',
     stadiumTime: 'Stadium Time',
     yourLocalTime: 'Your Local Time',
+    language: 'Language',
+    timezone: 'Timezone',
     roundLabels: [
       'Round of 32',
       'Round of 16',
@@ -64,6 +66,8 @@ const translations = {
     live: 'En vivo',
     stadiumTime: 'Hora local del estadio',
     yourLocalTime: 'Tu hora local',
+    language: 'Idioma',
+    timezone: 'Zona Horaria',
     roundLabels: [
       'Dieciseisavos',
       'Octavos de final',

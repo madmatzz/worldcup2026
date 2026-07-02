@@ -106,10 +106,16 @@ export function CircularBracket() {
   const [secondsLeft, setSecondsLeft] = useState(60)
   const [selected, setSelected] = useState<BracketMatch | null>(null)
   const [locale, setLocale] = useState<Locale>('en')
+  const [userTimezone, setUserTimezone] = useState<string>('')
 
   // detect locale on mount
   useEffect(() => {
     setLocale(detectLocale())
+    try {
+      setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC')
+    } catch {
+      setUserTimezone('UTC')
+    }
   }, [])
 
   const t = useMemo(() => getTranslations(locale), [locale])
@@ -328,7 +334,7 @@ export function CircularBracket() {
                     {formatKickoff(selected.date, locale, getVenueTimezone(selected.venue))} <span className="text-xs font-normal text-muted-foreground">({t.stadiumTime})</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatKickoff(selected.date, locale)} <span className="font-light">({t.yourLocalTime})</span>
+                    {formatKickoff(selected.date, locale, userTimezone || undefined)} <span className="font-light">({t.yourLocalTime})</span>
                   </p>
                 </>
               )}
@@ -437,6 +443,37 @@ export function CircularBracket() {
           </li>
         ))}
       </ul>
+
+      {/* Settings Footer */}
+      <footer className="mt-6 flex w-full flex-wrap items-center justify-center gap-8 border-t border-border pt-6 pb-4">
+        <div className="flex items-center gap-3">
+          <label htmlFor="locale-select" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.language}</label>
+          <select 
+            id="locale-select" 
+            value={locale} 
+            onChange={(e) => setLocale(e.target.value as Locale)}
+            className="rounded-md border border-border bg-card px-2 py-1.5 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        {userTimezone && (
+          <div className="flex items-center gap-3">
+            <label htmlFor="tz-select" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.timezone}</label>
+            <select 
+              id="tz-select" 
+              value={userTimezone} 
+              onChange={(e) => setUserTimezone(e.target.value)}
+              className="max-w-[200px] rounded-md border border-border bg-card px-2 py-1.5 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-ring sm:max-w-[250px]"
+            >
+              {Intl.supportedValuesOf('timeZone').map(tz => (
+                <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </footer>
     </div>
   )
 }
