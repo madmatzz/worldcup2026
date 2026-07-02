@@ -96,7 +96,11 @@ function parseEvent(event: any): { round: number | null; match: BracketMatch } {
       comp.status?.type?.description ??
       event.status?.type?.description ??
       'Scheduled',
-    clock: state === 'in' ? (comp.status?.displayClock && comp.status.displayClock !== "0:00" ? comp.status.displayClock : comp.status?.type?.shortDetail ?? null) : null,
+    clock: state === 'in' ? (
+      (typeof event.status?.clock === 'number' && event.status.clock > 0) 
+        ? `${Math.floor(event.status.clock / 60)}:${(event.status.clock % 60).toString().padStart(2, '0')}`
+        : (comp.status?.displayClock && comp.status.displayClock !== "0:00" ? comp.status.displayClock : comp.status?.type?.shortDetail ?? null)
+    ) : null,
     home: parseTeam(home),
     away: parseTeam(away),
     homeAbbr: home?.team?.abbreviation ?? '',
