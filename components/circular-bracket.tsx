@@ -194,8 +194,8 @@ export function CircularBracket() {
                 key={i}
                 d={d}
                 fill="none"
-                stroke="var(--color-border)"
-                strokeWidth={0.7}
+                stroke="white"
+                strokeWidth={1}
               />
             ))}
 
