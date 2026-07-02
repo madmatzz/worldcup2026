@@ -111,17 +111,21 @@ export function ChampionCelebration({
   }, [animate, colors])
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700 pointer-events-none ${
-        visible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
+    <>
       {/* Confetti canvas */}
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0"
+        className={`pointer-events-none fixed inset-0 z-[-1] blur-[2px] transition-opacity duration-700 ${
+          visible ? 'opacity-50' : 'opacity-0'
+        }`}
         aria-hidden="true"
       />
+
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700 pointer-events-none ${
+          visible ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
 
       {/* Backdrop */}
       {!dismissed && (
@@ -174,6 +178,7 @@ export function ChampionCelebration({
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
