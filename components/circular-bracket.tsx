@@ -537,6 +537,7 @@ export function CircularBracket() {
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelectedId(match.id)}
                       >
+                        <title>{displayTeamName(team, locale, t.tbd)}{isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''}</title>
                         {isLive && (
                           <g className="animate-pulse">
                             <circle cx={p.x} cy={p.y} r={r + 3} fill="none" stroke="#22c55e" strokeWidth={6} strokeOpacity={0.4} />
@@ -566,9 +567,7 @@ export function CircularBracket() {
                           preserveAspectRatio="xMidYMid slice"
                           filter={isLoser ? 'url(#desaturate)' : undefined}
                           className="transition-all duration-300"
-                        >
-                          <title>{displayTeamName(team, locale, t.tbd)}{isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''}</title>
-                        </image>
+                        />
                       </g>
                     )
                   }),
