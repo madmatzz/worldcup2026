@@ -214,6 +214,14 @@ export function CircularBracket() {
       return 0.4
     }
 
+    let recentChampions: string[] = []
+    try {
+      const stored = localStorage.getItem('recentChampions')
+      if (stored) recentChampions = JSON.parse(stored)
+    } catch (e) {
+      // Ignore parse errors
+    }
+
     for (let r = 0; r < 5; r++) {
       for (let i = 0; i < simRounds[r].length; i++) {
         const match = simRounds[r][i]
@@ -233,7 +241,15 @@ export function CircularBracket() {
         // Simulate match if no winner exists yet and both teams are known
         const hasWinner = match.status === 'finished' && (match.home?.winner || match.away?.winner)
         if (!hasWinner && match.home && match.away) {
-          const homeWins = Math.random() < 0.5
+          const isHomeRecentChamp = recentChampions.includes(match.home.abbr)
+          const isAwayRecentChamp = recentChampions.includes(match.away.abbr)
+          
+          let homeWins = Math.random() < 0.5
+          if (isHomeRecentChamp && !isAwayRecentChamp) {
+            homeWins = false
+          } else if (!isHomeRecentChamp && isAwayRecentChamp) {
+            homeWins = true
+          }
           
           match.status = 'finished'
           match.statusText = 'Simulated'
@@ -255,6 +271,16 @@ export function CircularBracket() {
         if (r === 4) {
           finalChampion = match.home?.winner ? match.home : (match.away?.winner ? match.away : null)
         }
+      }
+    }
+
+    if (finalChampion) {
+      recentChampions.push(finalChampion.abbr)
+      if (recentChampions.length > 5) recentChampions = recentChampions.slice(-5)
+      try {
+        localStorage.setItem('recentChampions', JSON.stringify(recentChampions))
+      } catch (e) {
+        // Ignore errors
       }
     }
     
