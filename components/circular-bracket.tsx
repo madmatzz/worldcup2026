@@ -318,13 +318,18 @@ export function CircularBracket() {
     const simRounds = JSON.parse(JSON.stringify(data.rounds)) as BracketMatch[][]
     let finalChampion: MatchTeam | null = null
     
+    const TEAM_STRENGTHS: Record<string, number> = {
+      ARG: 10, FRA: 10, 
+      ESP: 9, ENG: 9, BRA: 9,
+      GER: 8, POR: 8, NED: 8,
+      BEL: 7, CRO: 7, COL: 7, MAR: 7, JPN: 7, SUI: 7, AUT: 7,
+      MEX: 6, USA: 6, SEN: 6, SWE: 6, NOR: 6, CIV: 6, ALG: 6, EGY: 6, ECU: 6,
+      PAR: 5, GHA: 5, AUS: 5, RSA: 5, CAN: 5, BIH: 5,
+      COD: 4, CPV: 4
+    }
+
     const getTeamStrength = (abbr: string) => {
-      // Unused now, keeping it commented out in case we want to revert
-      // const topTier = ['ARG', 'FRA', 'BRA', 'ESP', 'ENG']
-      // const highTier = ['GER', 'POR', 'NED', 'BEL', 'URU', 'COL', 'ITA']
-      // if (topTier.includes(abbr)) return 0.85
-      // if (highTier.includes(abbr)) return 0.65
-      return 0.4
+      return TEAM_STRENGTHS[abbr] || 5
     }
 
     let recentChampions: string[] = []
@@ -354,15 +359,21 @@ export function CircularBracket() {
         // Simulate match if no winner exists yet and both teams are known
         const hasWinner = match.status === 'finished' && (match.home?.winner || match.away?.winner)
         if (!hasWinner && match.home && match.away) {
+          const homeStr = getTeamStrength(match.home.abbr)
+          const awayStr = getTeamStrength(match.away.abbr)
+          
+          let homeProb = Math.pow(homeStr, 2) / (Math.pow(homeStr, 2) + Math.pow(awayStr, 2))
+          
           const isHomeRecentChamp = recentChampions.includes(match.home.abbr)
           const isAwayRecentChamp = recentChampions.includes(match.away.abbr)
           
-          let homeWins = Math.random() < 0.5
           if (isHomeRecentChamp && !isAwayRecentChamp) {
-            homeWins = false
+            homeProb *= 0.5 // Reduce chances for recent champs to encourage variety
           } else if (!isHomeRecentChamp && isAwayRecentChamp) {
-            homeWins = true
+            homeProb = 1 - ((1 - homeProb) * 0.5) // Increase chances against recent champs
           }
+          
+          const homeWins = Math.random() < homeProb
           
           match.status = 'finished'
           match.statusText = 'Simulated'
@@ -513,8 +524,8 @@ export function CircularBracket() {
             }}
             className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               isManualMode 
-                ? 'border-green-500/40 bg-green-500/10 text-green-500'
-                : 'border-muted bg-card text-foreground hover:bg-muted/50'
+                ? 'border-green-500/40 bg-green-500/10 text-green-500 hover:border-green-500 hover:bg-green-500/20'
+                : 'border-muted bg-card text-foreground hover:border-foreground/40 hover:bg-muted/50'
             }`}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -525,7 +536,7 @@ export function CircularBracket() {
             <button
               type="button"
               onClick={() => setShowManualPopup(true)}
-              className="flex items-center gap-2 rounded-full border border-green-500/40 bg-card px-4 py-2 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/10"
+              className="flex items-center gap-2 rounded-full border border-green-500/40 bg-card px-4 py-2 text-sm font-medium text-green-500 transition-colors hover:border-green-500 hover:bg-green-500/10"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               {locale === 'es' ? 'Editar Resultados' : 'Edit Scores'}
@@ -540,8 +551,8 @@ export function CircularBracket() {
             }}
             className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               simulatedData 
-                ? 'border-accent/40 bg-card text-foreground hover:bg-accent/10'
-                : 'border-blue-500/40 bg-card text-foreground hover:bg-blue-500/10'
+                ? 'border-accent/40 bg-card text-foreground hover:border-accent hover:bg-accent/10'
+                : 'border-blue-500/40 bg-card text-foreground hover:border-blue-500 hover:bg-blue-500/10'
             }`}
           >
             <svg className={`h-4 w-4 ${simulatedData ? 'text-accent' : 'text-blue-500'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
@@ -554,7 +565,7 @@ export function CircularBracket() {
                 setSimulatedData(null)
                 setManualOverrides({})
               }}
-              className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
+              className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
               title={t.clearSimulation}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -718,7 +729,6 @@ export function CircularBracket() {
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelectedId(match.id)}
                         onMouseEnter={(e) => {
-                          const rect = (e.currentTarget as SVGElement).getBoundingClientRect()
                           const periodText = getPeriodText(match, t)
                           const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock) && match.statusName !== 'STATUS_HALFTIME'
                           
@@ -745,9 +755,12 @@ export function CircularBracket() {
 
                           setHoverTooltip({
                             content: tooltipContent,
-                            x: rect.left + rect.width / 2,
-                            y: rect.top - 8
+                            x: e.clientX,
+                            y: e.clientY
                           })
+                        }}
+                        onMouseMove={(e) => {
+                          setHoverTooltip(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)
                         }}
                         onMouseLeave={() => setHoverTooltip(null)}
                       >
@@ -908,7 +921,7 @@ export function CircularBracket() {
           )}
 
           {/* Stats */}
-          {(selected.home?.stats || selected.away?.stats) && (
+          {selected.statusText !== 'Simulated' && selected.statusText !== 'Manual' && (selected.home?.stats || selected.away?.stats) && (
             <div className="mt-4 border-t border-border pt-3">
               <div className="flex flex-col gap-2.5">
                 {[
@@ -953,7 +966,7 @@ export function CircularBracket() {
           )}
 
           {/* Events timeline */}
-          {selected.events.length > 0 && (
+          {selected.statusText !== 'Simulated' && selected.statusText !== 'Manual' && selected.events.length > 0 && (
             <div className="mt-4 border-t border-border pt-3">
               <div className="flex flex-col gap-1.5">
                 {selected.events.map((ev, i) => {
@@ -1134,12 +1147,12 @@ export function CircularBracket() {
       {/* Custom Hover Tooltip */}
       {hoverTooltip && (
         <div
-          className="pointer-events-none absolute z-50 rounded bg-foreground px-2 py-1 text-xs text-background shadow-lg transition-opacity duration-200"
+          className="pointer-events-none fixed z-50 rounded bg-foreground px-2 py-1 text-xs text-background shadow-lg transition-opacity duration-200"
           style={{
             left: hoverTooltip.x,
             top: hoverTooltip.y,
             transform: 'translate(-50%, -100%)',
-            marginTop: '-8px',
+            marginTop: '-12px',
           }}
         >
           {hoverTooltip.content}
