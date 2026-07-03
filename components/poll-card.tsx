@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { TEAM_INFO, flagUrl } from '@/lib/teams'
-import { getTranslations, type Locale } from '@/lib/i18n'
+import { getTranslations, teamName, type Locale } from '@/lib/i18n'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -65,10 +65,10 @@ export function PollCard({ eliminatedTeams = new Set<string>(), locale = 'en' }:
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <h3 className="mb-2 text-center text-2xl font-bold text-foreground uppercase tracking-wider">
+      <h3 className="mb-2 text-center text-xl md:text-2xl font-bold text-foreground uppercase tracking-wider text-balance px-2">
         {t.poll.question}
       </h3>
-      <p className="mb-8 text-center text-sm text-muted-foreground max-w-lg mx-auto">
+      <p className="mb-8 text-center text-xs md:text-sm text-muted-foreground max-w-lg mx-auto text-balance px-2">
         {t.poll.subtitle}
       </p>
 
@@ -114,7 +114,7 @@ export function PollCard({ eliminatedTeams = new Set<string>(), locale = 'en' }:
                       className={`h-6 w-6 rounded-full object-cover shadow-sm shrink-0 ${team.isEliminated ? 'saturate-[0.1]' : ''}`} 
                     />
                     <span className={`font-medium ${isMyVote ? 'text-primary' : team.isEliminated ? 'text-red-500' : 'text-foreground'}`}>
-                      {team.name} {isMyVote && <span className="text-xs ml-1 opacity-80">({t.poll.you})</span>}
+                      {teamName(locale, team.abbr, team.name)} {isMyVote && <span className="text-xs ml-1 opacity-80">({t.poll.you})</span>}
                     </span>
                   </div>
                   

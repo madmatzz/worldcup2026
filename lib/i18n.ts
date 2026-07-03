@@ -50,7 +50,7 @@ const translations = {
       corners: 'Corners'
     },
     poll: {
-      question: 'Who do you think will win the World Cup?',
+      question: 'Who will win the World Cup?',
       subtitle: 'Cast your vote and discover the fan favorites to lift the cup!',
       thanks: 'Thanks for your vote!',
       vote: 'vote',
@@ -145,7 +145,7 @@ const translations = {
       corners: 'Córners'
     },
     poll: {
-      question: '¿Quién creés que va a ganar el Mundial?',
+      question: '¿Quién ganará el Mundial?',
       subtitle: '¡Dejá tu voto y descubrí cuáles son los favoritos para levantar la copa!',
       thanks: '¡Gracias por tu voto!',
       vote: 'voto',
