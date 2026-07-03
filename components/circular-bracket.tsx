@@ -98,6 +98,40 @@ function displayTeamName(team: MatchTeam | null, locale: Locale, tbd: string): s
   return teamName(locale, team.abbr, team.name)
 }
 
+const halftimeStarts: Record<string, number> = {}
+
+function HalftimeCountdown({ matchId }: { matchId: string }) {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!halftimeStarts[matchId]) {
+      halftimeStarts[matchId] = Date.now()
+    }
+    const elapsed = Math.floor((Date.now() - halftimeStarts[matchId]) / 1000)
+    return Math.max(0, 15 * 60 - elapsed)
+  })
+  
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - halftimeStarts[matchId]) / 1000)
+      const remaining = Math.max(0, 15 * 60 - elapsed)
+      setTimeLeft(remaining)
+      if (remaining === 0) clearInterval(timer)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [matchId])
+  
+  if (timeLeft === 0) return null
+  
+  const m = Math.floor(timeLeft / 60)
+  const s = timeLeft % 60
+  
+  return (
+    <span className="flex items-center gap-1 rounded border border-orange-500/20 bg-orange-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-orange-500/90 font-mono tracking-tight animate-pulse">
+      <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      {m.toString().padStart(2, '0')}:{s.toString().padStart(2, '0')}
+    </span>
+  )
+}
+
 function getPeriodText(match: BracketMatch, t: ReturnType<typeof getTranslations>) {
   if (match.statusName === 'STATUS_HALFTIME') return t.periods.halftime;
   if (match.statusName === 'STATUS_FULL_TIME') return t.periods.fulltime;
@@ -724,80 +758,90 @@ export function CircularBracket() {
                     const mi = Math.floor(j / 2)
                     const match = data.rounds[ri][mi]
 
+                    const isLive = match.status === 'live'
+
+                    const handleMouseEnter = (e: React.MouseEvent) => {
+                      const periodText = getPeriodText(match, t)
+                      const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock) && match.statusName !== 'STATUS_HALFTIME'
+                      
+                      const hasScore = match.status !== 'scheduled' && match.home?.score != null && match.away?.score != null
+                      const scoreStr = hasScore ? `${match.home?.score} - ${match.away?.score}` : ''
+                      const pensStr = hasScore && match.home?.pens != null && match.away?.pens != null ? ` (${match.home.pens}-${match.away.pens}p)` : ''
+
+                      const tooltipContent = (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {match.home ? displayTeamName(match.home, locale, t.tbd) : t.tbd}
+                              {hasScore ? <span className="mx-1.5 font-mono font-bold tabular-nums text-muted-foreground">{scoreStr}{pensStr}</span> : <span className="mx-1.5 text-muted-foreground">vs</span>}
+                              {match.away ? displayTeamName(match.away, locale, t.tbd) : t.tbd}
+                            </span>
+                            {isLive && (periodText || showClock) && (
+                              <span className="flex items-center gap-1.5 border-l border-border/40 pl-2">
+                                {periodText && (
+                                  <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
+                                    {periodText}
+                                  </span>
+                                )}
+                                {showClock && (
+                                  <span className="flex items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-green-500/90 font-mono tracking-tight animate-pulse">
+                                    <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    {match.clock}
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                            <span>{formatKickoff(match.date, locale, userTimezone || undefined)}</span>
+                            {match.status === 'finished' && <span>{match.statusText}</span>}
+                          </div>
+                        </div>
+                      )
+
+                      setHoverTooltip({
+                        content: tooltipContent,
+                        x: e.clientX,
+                        y: e.clientY
+                      })
+                    }
+
+                    const handleMouseMove = (e: React.MouseEvent) => {
+                      setHoverTooltip(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)
+                    }
+
+                    const handleMouseLeave = () => setHoverTooltip(null)
+
                     if (!team) {
                       return (
                         <g
-                        key={`empty-${ri}-${j}`}
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => setSelectedId(match.id)}
-                      >
-                        <circle
-                          cx={p.x}
-                          cy={p.y}
-                          r={r}
-                          fill="var(--color-muted)"
-                        />
-                      </g>
+                          key={`empty-${ri}-${j}`}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => setSelectedId(match.id)}
+                          onMouseEnter={handleMouseEnter}
+                          onMouseMove={handleMouseMove}
+                          onMouseLeave={handleMouseLeave}
+                        >
+                          <circle
+                            cx={p.x}
+                            cy={p.y}
+                            r={r}
+                            fill="var(--color-muted)"
+                          />
+                        </g>
                       )
                     }
                     const flag = flagUrl(team.flag, 160)
                     const isSelected = selected?.id === match.id
                     const isLoser = eliminatedTeams.has(team.abbr)
-                    const isLive = match.status === 'live'
                     return (
                       <g
                         key={`team-${ri}-${j}`}
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelectedId(match.id)}
-                        onMouseEnter={(e) => {
-                          const periodText = getPeriodText(match, t)
-                          const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock) && match.statusName !== 'STATUS_HALFTIME'
-                          
-                          const hasScore = match.status !== 'scheduled' && match.home?.score != null && match.away?.score != null
-                          const scoreStr = hasScore ? `${match.home?.score} - ${match.away?.score}` : ''
-                          const pensStr = hasScore && match.home?.pens != null && match.away?.pens != null ? ` (${match.home.pens}-${match.away.pens}p)` : ''
-
-                          const tooltipContent = (
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
-                                <span>
-                                  {match.home ? displayTeamName(match.home, locale, t.tbd) : t.tbd}
-                                  {hasScore ? <span className="mx-1.5 font-mono font-bold tabular-nums text-muted-foreground">{scoreStr}{pensStr}</span> : <span className="mx-1.5 text-muted-foreground">vs</span>}
-                                  {match.away ? displayTeamName(match.away, locale, t.tbd) : t.tbd}
-                                </span>
-                                {isLive && (periodText || showClock) && (
-                                  <span className="flex items-center gap-1.5 border-l border-border/40 pl-2">
-                                    {periodText && (
-                                      <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
-                                        {periodText}
-                                      </span>
-                                    )}
-                                    {showClock && (
-                                      <span className="flex items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-green-500/90 font-mono tracking-tight animate-pulse">
-                                        <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {match.clock}
-                                      </span>
-                                    )}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-                                <span>{formatKickoff(match.date, locale, userTimezone || undefined)}</span>
-                                {match.status === 'finished' && <span>{match.statusText}</span>}
-                              </div>
-                            </div>
-                          )
-
-                          setHoverTooltip({
-                            content: tooltipContent,
-                            x: e.clientX,
-                            y: e.clientY
-                          })
-                        }}
-                        onMouseMove={(e) => {
-                          setHoverTooltip(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)
-                        }}
-                        onMouseLeave={() => setHoverTooltip(null)}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
                       >
                         {isLive && (
                           <g className="animate-pulse">
@@ -867,7 +911,7 @@ export function CircularBracket() {
                     <p className="text-xs font-semibold uppercase tracking-widest text-green-500">
                       {t.live}
                     </p>
-                    {(periodText || showClock) && (
+                    {(periodText || showClock || selected.statusName === 'STATUS_HALFTIME') && (
                       <div className="flex items-center gap-1.5 ml-1">
                         {periodText && (
                           <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
@@ -879,6 +923,9 @@ export function CircularBracket() {
                             <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             {selected.clock}
                           </span>
+                        )}
+                        {selected.statusName === 'STATUS_HALFTIME' && (
+                          <HalftimeCountdown matchId={selected.id} />
                         )}
                       </div>
                     )}
