@@ -753,9 +753,17 @@ export function CircularBracket() {
                           const periodText = getPeriodText(match, t)
                           const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock) && match.statusName !== 'STATUS_HALFTIME'
                           
+                          const hasScore = match.status !== 'scheduled' && match.home?.score != null && match.away?.score != null
+                          const scoreStr = hasScore ? `${match.home?.score} - ${match.away?.score}` : ''
+                          const pensStr = hasScore && match.home?.pens != null && match.away?.pens != null ? ` (${match.home.pens}-${match.away.pens}p)` : ''
+
                           const tooltipContent = (
                             <div className="flex items-center gap-2">
-                              <span>{displayTeamName(team, locale, t.tbd)}</span>
+                              <span>
+                                {match.home ? displayTeamName(match.home, locale, t.tbd) : t.tbd}
+                                {hasScore ? <span className="mx-1.5 font-mono font-bold tabular-nums text-muted-foreground">{scoreStr}{pensStr}</span> : <span className="mx-1.5 text-muted-foreground">vs</span>}
+                                {match.away ? displayTeamName(match.away, locale, t.tbd) : t.tbd}
+                              </span>
                               {isLive && (periodText || showClock) && (
                                 <span className="flex items-center gap-1.5 border-l border-border/40 pl-2">
                                   {periodText && (
@@ -1038,7 +1046,8 @@ export function CircularBracket() {
                 const tz = userTimezone || 'UTC'
                 const isToday = viewDate.toLocaleDateString('en-US', { timeZone: tz }) === new Date().toLocaleDateString('en-US', { timeZone: tz })
                 if (isToday) return t.matchesToday
-                return viewDate.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US', { month: 'short', day: 'numeric', timeZone: tz })
+                const dateStr = viewDate.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz })
+                return dateStr.replace(/,/g, '')
               })()}
             </h2>
             <button 
