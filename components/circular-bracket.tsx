@@ -756,7 +756,7 @@ export function CircularBracket() {
 
                     // match index (2 slots per match)
                     const mi = Math.floor(j / 2)
-                    const match = data.rounds[ri][mi]
+                    const match = (activeData ?? data).rounds[ri][mi]
 
                     const isLive = match.status === 'live'
 
