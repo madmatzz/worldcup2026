@@ -720,7 +720,7 @@ export function CircularBracket() {
                         onMouseEnter={(e) => {
                           const rect = (e.currentTarget as SVGElement).getBoundingClientRect()
                           const periodText = getPeriodText(match, t)
-                          const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock)
+                          const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock) && match.statusName !== 'STATUS_HALFTIME'
                           
                           const tooltipContent = (
                             <div className="flex items-center gap-2">
@@ -813,7 +813,7 @@ export function CircularBracket() {
             <div className="flex flex-col gap-1">
               {selected.status === 'live' ? (() => {
                 const periodText = getPeriodText(selected, t)
-                const showClock = selected.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(selected.clock)
+                const showClock = selected.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(selected.clock) && selected.statusName !== 'STATUS_HALFTIME'
                 return (
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-semibold uppercase tracking-widest text-green-500">
@@ -982,7 +982,7 @@ export function CircularBracket() {
                       {isLive ? (
                         <span className="flex items-center gap-1.5 text-green-500">
                           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-                          {t.live}{match.clock ? ` (${match.clock})` : ''}
+                          {t.live}{match.clock && match.statusName !== 'STATUS_HALFTIME' ? ` (${match.clock})` : ''}
                         </span>
                       ) : match.status === 'finished' ? (
                         match.statusText
