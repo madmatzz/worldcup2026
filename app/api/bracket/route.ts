@@ -410,8 +410,8 @@ export async function GET() {
             const homeWinner = childHome?.status === 'finished' ? (childHome.home?.winner ? childHome.home : (childHome.away?.winner ? childHome.away : null)) : null
             const awayWinner = childAway?.status === 'finished' ? (childAway.home?.winner ? childAway.home : (childAway.away?.winner ? childAway.away : null)) : null
             
-            if (homeWinner) parentMatch.home = { ...homeWinner, winner: false, score: null }
-            if (awayWinner) parentMatch.away = { ...awayWinner, winner: false, score: null }
+            if (homeWinner) parentMatch.home = { ...homeWinner, winner: false, score: null, pens: null, stats: undefined }
+            if (awayWinner) parentMatch.away = { ...awayWinner, winner: false, score: null, pens: null, stats: undefined }
             
             customRounds[r].push(parentMatch)
           }

@@ -352,8 +352,8 @@ export function CircularBracket() {
           const homeWinner = childHome?.home?.winner ? childHome.home : (childHome?.away?.winner ? childHome.away : null)
           const awayWinner = childAway?.home?.winner ? childAway.home : (childAway?.away?.winner ? childAway.away : null)
           
-          if (homeWinner) match.home = { ...homeWinner, winner: false, score: null }
-          if (awayWinner) match.away = { ...awayWinner, winner: false, score: null }
+          if (homeWinner) match.home = { ...homeWinner, winner: false, score: null, pens: null }
+          if (awayWinner) match.away = { ...awayWinner, winner: false, score: null, pens: null }
         }
         
         // Simulate match if no winner exists yet and both teams are known
@@ -373,21 +373,41 @@ export function CircularBracket() {
             homeProb = 1 - ((1 - homeProb) * 0.5) // Increase chances against recent champs
           }
           
-          const homeWins = Math.random() < homeProb
-          
           match.status = 'finished'
           match.statusText = 'Simulated'
           match.clock = null
-          if (homeWins) {
-            match.home.winner = true
-            match.away.winner = false
-            match.home.score = Math.floor(Math.random() * 3) + 1
-            match.away.score = match.home.score - 1
+          
+          const drawProb = Math.max(0.05, 0.35 - (Math.abs(homeStr - awayStr) * 0.05))
+          if (Math.random() < drawProb) {
+            const score = Math.floor(Math.random() * 3) // 0-0, 1-1, 2-2
+            match.home.score = score
+            match.away.score = score
+            
+            const homeWinsPens = Math.random() < homeProb
+            if (homeWinsPens) {
+              match.home.winner = true
+              match.away.winner = false
+              match.home.pens = 4 + Math.floor(Math.random() * 2)
+              match.away.pens = match.home.pens - 1 - Math.floor(Math.random() * 2)
+            } else {
+              match.home.winner = false
+              match.away.winner = true
+              match.away.pens = 4 + Math.floor(Math.random() * 2)
+              match.home.pens = match.away.pens - 1 - Math.floor(Math.random() * 2)
+            }
           } else {
-            match.home.winner = false
-            match.away.winner = true
-            match.away.score = Math.floor(Math.random() * 3) + 1
-            match.home.score = match.away.score - 1
+            const homeWins = Math.random() < homeProb
+            if (homeWins) {
+              match.home.winner = true
+              match.away.winner = false
+              match.home.score = Math.floor(Math.random() * 3) + 1
+              match.away.score = Math.floor(Math.random() * match.home.score)
+            } else {
+              match.home.winner = false
+              match.away.winner = true
+              match.away.score = Math.floor(Math.random() * 3) + 1
+              match.home.score = Math.floor(Math.random() * match.away.score)
+            }
           }
         }
 
@@ -907,13 +927,18 @@ export function CircularBracket() {
               </div>
             ))}
           </div>
-          <p className="mt-2 text-center font-mono text-2xl font-bold text-foreground tabular-nums">
-            {selected.status !== 'scheduled' &&
-            selected.home?.score != null &&
-            selected.away?.score != null
-              ? `${selected.home.score} \u2013 ${selected.away.score}`
-              : '\u2013'}
-          </p>
+          <div className="mt-2 flex flex-col items-center">
+            <p className="font-mono text-2xl font-bold text-foreground tabular-nums">
+              {selected.status !== 'scheduled' && selected.home?.score != null && selected.away?.score != null
+                ? `${selected.home.score} \u2013 ${selected.away.score}`
+                : '\u2013'}
+            </p>
+            {selected.home?.pens != null && selected.away?.pens != null && (
+              <p className="text-xs font-semibold text-muted-foreground mt-0.5">
+                {`(${selected.home.pens} \u2013 ${selected.away.pens} p)`}
+              </p>
+            )}
+          </div>
           {selected.note && (
             <p className="mt-1 text-center text-xs text-muted-foreground">
               {selected.note}
@@ -921,7 +946,7 @@ export function CircularBracket() {
           )}
 
           {/* Stats */}
-          {selected.statusText !== 'Simulated' && selected.statusText !== 'Manual' && (selected.home?.stats || selected.away?.stats) && (
+          {selected.status !== 'scheduled' && selected.statusText !== 'Simulated' && selected.statusText !== 'Manual' && (selected.home?.stats || selected.away?.stats) && (
             <div className="mt-4 border-t border-border pt-3">
               <div className="flex flex-col gap-2.5">
                 {[
@@ -966,7 +991,7 @@ export function CircularBracket() {
           )}
 
           {/* Events timeline */}
-          {selected.statusText !== 'Simulated' && selected.statusText !== 'Manual' && selected.events.length > 0 && (
+          {selected.status !== 'scheduled' && selected.statusText !== 'Simulated' && selected.statusText !== 'Manual' && selected.events.length > 0 && (
             <div className="mt-4 border-t border-border pt-3">
               <div className="flex flex-col gap-1.5">
                 {selected.events.map((ev, i) => {
@@ -1073,9 +1098,14 @@ export function CircularBracket() {
                             {displayTeamName(team, locale, t.tbd)}
                           </span>
                         </div>
-                        <span className="font-mono font-bold text-foreground tabular-nums">
-                          {match.status !== 'scheduled' && team?.score != null ? team.score : '-'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {match.status !== 'scheduled' && team?.pens != null && (
+                            <span className="text-[10px] text-muted-foreground font-semibold">({team.pens})</span>
+                          )}
+                          <span className="font-mono font-bold text-foreground tabular-nums">
+                            {match.status !== 'scheduled' && team?.score != null ? team.score : '-'}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
