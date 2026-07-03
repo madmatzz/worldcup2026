@@ -134,6 +134,7 @@ export function CircularBracket() {
   
   const [isManualMode, setIsManualMode] = useState(false)
   const [showManualPopup, setShowManualPopup] = useState(false)
+  const [warningMessage, setWarningMessage] = useState<string | null>(null)
   const [manualOverrides, setManualOverrides] = useState<Record<string, { home: number | '', away: number | '', pensWinner?: 'home' | 'away' }>>({})
 
   const activeData = useMemo(() => {
@@ -218,6 +219,20 @@ export function CircularBracket() {
       })
     })
     setManualOverrides(newOverrides)
+  }
+
+  const closeManualPopup = () => {
+    setShowManualPopup(false)
+    const filledCount = Object.keys(manualOverrides).length
+    if (filledCount === 0) {
+      setIsManualMode(false)
+    } else {
+      const totalMatches = data?.rounds.reduce((acc, round) => acc + round.length, 0) || 0
+      if (filledCount < totalMatches) {
+        setWarningMessage(t.fillAllMatchesWarning)
+        setTimeout(() => setWarningMessage(null), 4000)
+      }
+    }
   }
 
   const selected = useMemo(() => {
@@ -1089,8 +1104,14 @@ export function CircularBracket() {
 
       {/* Manual Mode Popup */}
       {showManualPopup && activeData && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-2 sm:p-4">
-          <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-4 sm:p-6 shadow-2xl relative">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-2 sm:p-4"
+          onClick={closeManualPopup}
+        >
+          <div 
+            className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-4 sm:p-6 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={fillManualRandomly}
               className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
@@ -1108,7 +1129,7 @@ export function CircularBracket() {
             </button>
 
             <button 
-              onClick={() => setShowManualPopup(false)}
+              onClick={closeManualPopup}
               className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 text-muted-foreground hover:text-foreground"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1216,11 +1237,18 @@ export function CircularBracket() {
             </div>
             
             <div className="mt-8 flex justify-center">
-              <button onClick={() => setShowManualPopup(false)} className="rounded-full bg-foreground text-background px-8 py-2 font-bold hover:bg-foreground/90 transition-colors">
+              <button onClick={closeManualPopup} className="rounded-full bg-foreground text-background px-8 py-2 font-bold hover:bg-foreground/90 transition-colors">
                 {locale === 'es' ? 'Ver Bracket' : 'View Bracket'}
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Warning Toast */}
+      {warningMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] bg-orange-500/90 backdrop-blur text-white px-6 py-3 rounded-full shadow-2xl text-sm sm:text-base font-bold animate-in fade-in slide-in-from-bottom-4">
+          {warningMessage}
         </div>
       )}
     </div>
