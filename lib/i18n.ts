@@ -28,6 +28,15 @@ const translations = {
       'Semi-finals',
       'Final',
     ] as string[],
+    periods: {
+      firstHalf: '1st Half',
+      secondHalf: '2nd Half',
+      halftime: 'Halftime',
+      fulltime: 'Full Time',
+      extraTime1: '1st Extra Time',
+      extraTime2: '2nd Extra Time',
+      penalties: 'Penalties'
+    },
     // Team names
     teams: {
       CAN: 'Canada',
@@ -91,6 +100,15 @@ const translations = {
       'Semifinales',
       'Final',
     ] as string[],
+    periods: {
+      firstHalf: '1er Tiempo',
+      secondHalf: '2do Tiempo',
+      halftime: 'Entretiempo',
+      fulltime: 'Finalizado',
+      extraTime1: '1ra Prórroga',
+      extraTime2: '2da Prórroga',
+      penalties: 'Penales'
+    },
     teams: {
       CAN: 'Canadá',
       RSA: 'Sudáfrica',
@@ -165,7 +183,7 @@ export function detectLocale(): Locale {
 }
 
 export function getTranslations(locale: Locale): Translations {
-  return translations[locale]
+  return translations[locale] as unknown as Translations
 }
 
 /** Translate a team name by abbreviation */

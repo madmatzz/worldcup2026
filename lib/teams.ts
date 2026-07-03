@@ -68,6 +68,8 @@ export type BracketMatch = {
   date: string // ISO
   status: 'scheduled' | 'live' | 'finished'
   statusText: string
+  statusName: string | null
+  period: number | null
   clock: string | null
   home: MatchTeam | null // null = TBD slot
   away: MatchTeam | null

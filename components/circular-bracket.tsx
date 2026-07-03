@@ -97,6 +97,17 @@ function displayTeamName(team: MatchTeam | null, locale: Locale, tbd: string): s
   return teamName(locale, team.abbr, team.name)
 }
 
+function getPeriodText(match: BracketMatch, t: ReturnType<typeof getTranslations>) {
+  if (match.statusName === 'STATUS_HALFTIME') return t.periods.halftime;
+  if (match.statusName === 'STATUS_FULL_TIME') return t.periods.fulltime;
+  if (match.statusName === 'STATUS_SHOOTOUT' || match.period === 5) return t.periods.penalties;
+  if (match.period === 1) return t.periods.firstHalf;
+  if (match.period === 2) return t.periods.secondHalf;
+  if (match.period === 3) return t.periods.extraTime1;
+  if (match.period === 4) return t.periods.extraTime2;
+  return null;
+}
+
 export function CircularBracket() {
   const { data, error, isValidating } = useSWR('/api/bracket', fetcher, {
     refreshInterval: REFRESH_MS,
@@ -129,7 +140,7 @@ export function CircularBracket() {
   }, [selectedId, activeData])
   const [locale, setLocale] = useState<Locale>('en')
   const [userTimezone, setUserTimezone] = useState<string>('')
-  const [hoverTooltip, setHoverTooltip] = useState<{ text: string, x: number, y: number } | null>(null)
+  const [hoverTooltip, setHoverTooltip] = useState<{ content: React.ReactNode, x: number, y: number } | null>(null)
 
   // detect locale on mount
   useEffect(() => {
@@ -565,8 +576,32 @@ export function CircularBracket() {
                         onClick={() => setSelectedId(match.id)}
                         onMouseEnter={(e) => {
                           const rect = (e.currentTarget as SVGElement).getBoundingClientRect()
+                          const periodText = getPeriodText(match, t)
+                          const showClock = match.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(match.clock)
+                          
+                          const tooltipContent = (
+                            <div className="flex items-center gap-2">
+                              <span>{displayTeamName(team, locale, t.tbd)}</span>
+                              {isLive && (periodText || showClock) && (
+                                <span className="flex items-center gap-1.5 border-l border-border/40 pl-2">
+                                  {periodText && (
+                                    <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
+                                      {periodText}
+                                    </span>
+                                  )}
+                                  {showClock && (
+                                    <span className="flex items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-green-500/90 font-mono tracking-tight animate-pulse">
+                                      <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                      {match.clock}
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          )
+
                           setHoverTooltip({
-                            text: displayTeamName(team, locale, t.tbd) + (isLive && match.clock ? ` (${t.live} - ${match.clock})` : ''),
+                            content: tooltipContent,
                             x: rect.left + rect.width / 2,
                             y: rect.top - 8
                           })
@@ -633,21 +668,37 @@ export function CircularBracket() {
           {/* Header row */}
           <div className="mb-4 flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
-              {selected.status === 'live' ? (
-                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-green-500">
-                  {t.live}
-                  {selected.clock && (
-                    <span className="text-muted-foreground lowercase normal-case tracking-normal animate-pulse">
-                      ({selected.clock})
-                    </span>
-                  )}
-                </p>
-              ) : selected.status === 'finished' ? (
+              {selected.status === 'live' ? (() => {
+                const periodText = getPeriodText(selected, t)
+                const showClock = selected.clock && !['HT', 'Halftime', 'FT', 'Pen'].includes(selected.clock)
+                return (
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-green-500">
+                      {t.live}
+                    </p>
+                    {(periodText || showClock) && (
+                      <div className="flex items-center gap-1.5 ml-1">
+                        {periodText && (
+                          <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
+                            {periodText}
+                          </span>
+                        )}
+                        {showClock && (
+                          <span className="flex items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-green-500/90 font-mono tracking-tight animate-pulse">
+                            <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {selected.clock}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })() : selected.status === 'finished' ? (
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{selected.statusText}</p>
               ) : (
                 <>
                   <p className="text-sm font-semibold text-foreground">
-                    {formatKickoff(selected.date, locale, getVenueTimezone(selected.venue))} <span className="text-xs font-normal text-muted-foreground">({t.stadiumTime})</span>
+                    {formatKickoff(selected.date, locale, getVenueTimezone(selected.venue || undefined))} <span className="text-xs font-normal text-muted-foreground">({t.stadiumTime})</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {formatKickoff(selected.date, locale, userTimezone || undefined)} <span className="font-light">({t.yourLocalTime})</span>
@@ -902,7 +953,7 @@ export function CircularBracket() {
             transform: 'translate(-50%, -100%)'
           }}
         >
-          {hoverTooltip.text}
+          {hoverTooltip.content}
         </div>
       )}
     </div>
