@@ -317,7 +317,7 @@ export async function GET() {
     if (valid) {
       const CUSTOM_R32 = [
         ['BRA', 'JPN'], ['CIV', 'NOR'], ['MEX', 'ECU'], ['ENG', 'COD'],
-        ['ARG', 'CPV'], ['AUS', 'EGY'], ['SUI', 'ALG'], ['COL', 'GHA'],
+        ['SUI', 'ALG'], ['ARG', 'CPV'], ['AUS', 'EGY'], ['COL', 'GHA'],
         ['SEN', 'BEL'], ['BIH', 'USA'], ['AUT', 'ESP'], ['CRO', 'POR'],
         ['MAR', 'NED'], ['CAN', 'RSA'], ['SWE', 'FRA'], ['PAR', 'GER']
       ]
