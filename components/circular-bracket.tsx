@@ -128,7 +128,93 @@ export function CircularBracket() {
     })
   }
 
-  const activeData = simulatedData || data
+  const [locale, setLocale] = useState<Locale>('en')
+  const [userTimezone, setUserTimezone] = useState<string>('')
+  const [hoverTooltip, setHoverTooltip] = useState<{ content: React.ReactNode, x: number, y: number } | null>(null)
+  
+  const [isManualMode, setIsManualMode] = useState(false)
+  const [showManualPopup, setShowManualPopup] = useState(false)
+  const [manualOverrides, setManualOverrides] = useState<Record<string, { home: number, away: number, pensWinner?: 'home' | 'away' }>>({})
+
+  const activeData = useMemo(() => {
+    if (simulatedData) return simulatedData
+    if (!data) return null
+    if (!isManualMode || Object.keys(manualOverrides).length === 0) return data
+    
+    // Apply manual overrides
+    const cloned = JSON.parse(JSON.stringify(data)) as BracketData
+    let finalChampion = cloned.champion
+    for (let r = 0; r < 5; r++) {
+      for (let i = 0; i < cloned.rounds[r].length; i++) {
+        const match = cloned.rounds[r][i]
+        
+        // Propagate winners from previous round
+        if (r > 0) {
+          const childHome = cloned.rounds[r - 1][i * 2]
+          const childAway = cloned.rounds[r - 1][i * 2 + 1]
+          
+          const homeWinner = childHome?.home?.winner ? childHome.home : (childHome?.away?.winner ? childHome.away : null)
+          const awayWinner = childAway?.home?.winner ? childAway.home : (childAway?.away?.winner ? childAway.away : null)
+          
+          if (homeWinner) match.home = { ...homeWinner, winner: false, score: null, pens: null }
+          if (awayWinner) match.away = { ...awayWinner, winner: false, score: null, pens: null }
+        }
+        
+        const override = manualOverrides[match.id]
+        if (override && match.home && match.away) {
+          match.status = 'finished'
+          match.statusText = 'Manual'
+          match.clock = null
+          match.home.score = override.home
+          match.away.score = override.away
+          
+          if (override.home > override.away) {
+            match.home.winner = true
+            match.away.winner = false
+          } else if (override.away > override.home) {
+            match.home.winner = false
+            match.away.winner = true
+          } else if (override.home === override.away) {
+            if (override.pensWinner === 'home') {
+              match.home.winner = true
+              match.away.winner = false
+            } else if (override.pensWinner === 'away') {
+              match.home.winner = false
+              match.away.winner = true
+            } else {
+              match.home.winner = false
+              match.away.winner = false
+            }
+          }
+        }
+        
+        if (r === 4) {
+          finalChampion = match.home?.winner ? match.home : (match.away?.winner ? match.away : null)
+        }
+      }
+    }
+    cloned.champion = finalChampion
+    return cloned
+  }, [data, simulatedData, isManualMode, manualOverrides])
+
+  const fillManualRandomly = () => {
+    if (!data) return
+    const newOverrides: typeof manualOverrides = {}
+    data.rounds.forEach(round => {
+      round.forEach(match => {
+        const home = Math.floor(Math.random() * 4)
+        const away = Math.floor(Math.random() * 4)
+        let pensWinner: 'home' | 'away' | undefined
+        
+        if (home === away) {
+          pensWinner = Math.random() > 0.5 ? 'home' : 'away'
+        }
+        
+        newOverrides[match.id] = { home, away, pensWinner }
+      })
+    })
+    setManualOverrides(newOverrides)
+  }
 
   const selected = useMemo(() => {
     if (!selectedId || !activeData) return null
@@ -138,9 +224,6 @@ export function CircularBracket() {
     }
     return null
   }, [selectedId, activeData])
-  const [locale, setLocale] = useState<Locale>('en')
-  const [userTimezone, setUserTimezone] = useState<string>('')
-  const [hoverTooltip, setHoverTooltip] = useState<{ content: React.ReactNode, x: number, y: number } | null>(null)
 
   // detect locale on mount
   useEffect(() => {
@@ -395,9 +478,47 @@ export function CircularBracket() {
         
         {/* Simulation controls */}
         <div className="flex items-center gap-2">
+          {/* Manual Mode Toggle */}
           <button
             type="button"
-            onClick={handleSimulate}
+            onClick={() => {
+              setIsManualMode(prev => {
+                if (!prev) {
+                  setSimulatedData(null)
+                  setShowManualPopup(true)
+                } else {
+                  setShowManualPopup(false)
+                }
+                return !prev
+              })
+            }}
+            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+              isManualMode 
+                ? 'border-green-500/40 bg-green-500/10 text-green-500'
+                : 'border-muted bg-card text-foreground hover:bg-muted/50'
+            }`}
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            {isManualMode ? t.exitManual : t.manualMode}
+          </button>
+
+          {isManualMode && !showManualPopup && (
+            <button
+              type="button"
+              onClick={() => setShowManualPopup(true)}
+              className="flex items-center gap-2 rounded-full border border-green-500/40 bg-card px-4 py-2 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/10"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              {locale === 'es' ? 'Editar Resultados' : 'Edit Scores'}
+            </button>
+          )}
+          
+          <button
+            type="button"
+            onClick={() => {
+              setIsManualMode(false)
+              handleSimulate()
+            }}
             className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               simulatedData 
                 ? 'border-accent/40 bg-card text-foreground hover:bg-accent/10'
@@ -407,10 +528,13 @@ export function CircularBracket() {
             <svg className={`h-4 w-4 ${simulatedData ? 'text-accent' : 'text-blue-500'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             {simulatedData ? t.reSimulateMatches : t.simulateMatches}
           </button>
-          {simulatedData && (
+          {(simulatedData || (isManualMode && Object.keys(manualOverrides).length > 0)) && (
             <button
               type="button"
-              onClick={() => setSimulatedData(null)}
+              onClick={() => {
+                setSimulatedData(null)
+                setManualOverrides({})
+              }}
               className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
               title={t.clearSimulation}
             >
@@ -945,15 +1069,148 @@ export function CircularBracket() {
 
       {/* Custom Hover Tooltip */}
       {hoverTooltip && (
-        <div 
-          className="pointer-events-none fixed z-50 rounded-lg bg-card/95 px-3 py-1.5 text-sm font-semibold text-foreground shadow-xl border border-border/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
-          style={{ 
-            left: hoverTooltip.x, 
+        <div
+          className="pointer-events-none absolute z-50 rounded bg-foreground px-2 py-1 text-xs text-background shadow-lg transition-opacity duration-200"
+          style={{
+            left: hoverTooltip.x,
             top: hoverTooltip.y,
-            transform: 'translate(-50%, -100%)'
+            transform: 'translate(-50%, -100%)',
+            marginTop: '-8px',
           }}
         >
           {hoverTooltip.content}
+          <div className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+        </div>
+      )}
+
+      {/* Manual Mode Popup */}
+      {showManualPopup && activeData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-2 sm:p-4">
+          <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-4 sm:p-6 shadow-2xl relative">
+            <button
+              onClick={fillManualRandomly}
+              className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth={2} />
+                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none" />
+                <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none" />
+                <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none" />
+                <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor" stroke="none" />
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+              </svg>
+              <span className="hidden sm:inline">{t.randomScores}</span>
+              <span className="sm:hidden">{locale === 'es' ? 'Aleatorio' : 'Random'}</span>
+            </button>
+
+            <button 
+              onClick={() => setShowManualPopup(false)}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 text-muted-foreground hover:text-foreground"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            
+            <h2 className="text-xl sm:text-2xl font-black uppercase tracking-widest text-center mb-6 mt-8 sm:mt-0">
+              {locale === 'es' ? 'Resultados Manuales' : 'Manual Scores'}
+            </h2>
+            
+            <div className="flex flex-col gap-8">
+              {[...activeData.rounds].map((round, rIndex) => {
+                const roundName = rIndex === 0 ? (locale === 'es' ? 'Dieciseisavos' : 'Round of 32')
+                                : rIndex === 1 ? (locale === 'es' ? 'Octavos de Final' : 'Round of 16')
+                                : rIndex === 2 ? (locale === 'es' ? 'Cuartos de Final' : 'Quarterfinals')
+                                : rIndex === 3 ? (locale === 'es' ? 'Semifinales' : 'Semifinals')
+                                : (locale === 'es' ? 'Final' : 'Final');
+                return (
+                  <div key={rIndex} className="flex flex-col gap-3">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1">{roundName}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {round.map(match => (
+                        <div key={match.id} className="flex flex-col gap-2 rounded-lg border border-border bg-background p-3 shadow-sm hover:border-muted-foreground/30 transition-colors">
+                          <div className="flex items-center justify-between">
+                            {/* Home */}
+                            <div className="flex flex-1 items-center gap-2 overflow-hidden">
+                              {match.home ? (
+                                <>
+                                  <img src={flagUrl(match.home.flag, 80) || '/placeholder.svg'} className="w-5 h-5 shrink-0 rounded-full object-cover" />
+                                  <span className="text-sm font-medium truncate">{displayTeamName(match.home, locale, t.tbd)}</span>
+                                </>
+                              ) : <span className="text-sm text-muted-foreground truncate">{t.tbd}</span>}
+                              
+                              {match.home && match.away && (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={manualOverrides[match.id]?.home ?? ''}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value)
+                                    setManualOverrides(prev => ({
+                                      ...prev, [match.id]: { ...(prev[match.id] || { home:0, away:0 }), home: isNaN(val) ? 0 : val }
+                                    }))
+                                  }}
+                                  className="w-10 sm:w-12 shrink-0 rounded border bg-card px-1 py-1.5 sm:py-1 text-center font-mono text-sm focus:outline-none focus:ring-1 focus:ring-accent ml-auto"
+                                />
+                              )}
+                            </div>
+                            
+                            <span className="mx-1 sm:mx-2 text-xs font-bold text-muted-foreground">-</span>
+                            
+                            {/* Away */}
+                            <div className="flex flex-1 items-center justify-end gap-2 overflow-hidden">
+                              {match.home && match.away && (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={manualOverrides[match.id]?.away ?? ''}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value)
+                                    setManualOverrides(prev => ({
+                                      ...prev, [match.id]: { ...(prev[match.id] || { home:0, away:0 }), away: isNaN(val) ? 0 : val }
+                                    }))
+                                  }}
+                                  className="w-10 sm:w-12 shrink-0 rounded border bg-card px-1 py-1.5 sm:py-1 text-center font-mono text-sm focus:outline-none focus:ring-1 focus:ring-accent mr-auto"
+                                />
+                              )}
+                              {match.away ? (
+                                <>
+                                  <span className="text-sm font-medium truncate text-right">{displayTeamName(match.away, locale, t.tbd)}</span>
+                                  <img src={flagUrl(match.away.flag, 80) || '/placeholder.svg'} className="w-5 h-5 shrink-0 rounded-full object-cover" />
+                                </>
+                              ) : <span className="text-sm text-muted-foreground truncate text-right">{t.tbd}</span>}
+                            </div>
+                          </div>
+                          
+                          {/* Penalties */}
+                          {match.home && match.away && manualOverrides[match.id]?.home === manualOverrides[match.id]?.away && manualOverrides[match.id]?.home !== undefined && (
+                            <div className="flex justify-between px-2 sm:px-8 mt-1">
+                              <button 
+                                onClick={() => setManualOverrides(prev => ({ ...prev, [match.id]: { ...prev[match.id], pensWinner: 'home' } }))}
+                                className={`text-[10px] uppercase font-bold px-2 py-1 rounded transition-colors ${manualOverrides[match.id]?.pensWinner === 'home' ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                              >
+                                Pen
+                              </button>
+                              <button 
+                                onClick={() => setManualOverrides(prev => ({ ...prev, [match.id]: { ...prev[match.id], pensWinner: 'away' } }))}
+                                className={`text-[10px] uppercase font-bold px-2 py-1 rounded transition-colors ${manualOverrides[match.id]?.pensWinner === 'away' ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                              >
+                                Pen
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            
+            <div className="mt-8 flex justify-center">
+              <button onClick={() => setShowManualPopup(false)} className="rounded-full bg-foreground text-background px-8 py-2 font-bold hover:bg-foreground/90 transition-colors">
+                {locale === 'es' ? 'Ver Bracket' : 'View Bracket'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
