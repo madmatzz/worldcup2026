@@ -134,7 +134,7 @@ export function CircularBracket() {
   
   const [isManualMode, setIsManualMode] = useState(false)
   const [showManualPopup, setShowManualPopup] = useState(false)
-  const [manualOverrides, setManualOverrides] = useState<Record<string, { home: number, away: number, pensWinner?: 'home' | 'away' }>>({})
+  const [manualOverrides, setManualOverrides] = useState<Record<string, { home: number | '', away: number | '', pensWinner?: 'home' | 'away' }>>({})
 
   const activeData = useMemo(() => {
     if (simulatedData) return simulatedData
@@ -165,10 +165,14 @@ export function CircularBracket() {
           match.status = 'finished'
           match.statusText = 'Manual'
           match.clock = null
-          match.home.score = override.home
-          match.away.score = override.away
           
-          if (override.home > override.away) {
+          const homeScore = override.home === '' ? 0 : override.home
+          const awayScore = override.away === '' ? 0 : override.away
+          
+          match.home.score = homeScore
+          match.away.score = awayScore
+          
+          if (homeScore > awayScore) {
             match.home.winner = true
             match.away.winner = false
           } else if (override.away > override.home) {
@@ -1064,7 +1068,7 @@ export function CircularBracket() {
 
       {/* Champion celebration popup */}
       {activeData?.champion && (
-        <ChampionCelebration key={activeData.updatedAt} champion={activeData.champion} locale={locale} />
+        <ChampionCelebration key={activeData.champion.abbr} champion={activeData.champion} locale={locale} />
       )}
 
       {/* Custom Hover Tooltip */}
@@ -1139,13 +1143,16 @@ export function CircularBracket() {
                               
                               {match.home && match.away && (
                                 <input
-                                  type="number"
-                                  min="0"
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  autoComplete="off"
+                                  data-lpignore="true"
                                   value={manualOverrides[match.id]?.home ?? ''}
                                   onChange={(e) => {
                                     const val = parseInt(e.target.value)
                                     setManualOverrides(prev => ({
-                                      ...prev, [match.id]: { ...(prev[match.id] || { home:0, away:0 }), home: isNaN(val) ? 0 : val }
+                                      ...prev, [match.id]: { ...(prev[match.id] || { home: '', away: '' }), home: isNaN(val) ? '' : val }
                                     }))
                                   }}
                                   className="w-10 sm:w-12 shrink-0 rounded border bg-card px-1 py-1.5 sm:py-1 text-center font-mono text-sm focus:outline-none focus:ring-1 focus:ring-accent ml-auto"
@@ -1159,13 +1166,16 @@ export function CircularBracket() {
                             <div className="flex flex-1 items-center justify-end gap-2 overflow-hidden">
                               {match.home && match.away && (
                                 <input
-                                  type="number"
-                                  min="0"
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  autoComplete="off"
+                                  data-lpignore="true"
                                   value={manualOverrides[match.id]?.away ?? ''}
                                   onChange={(e) => {
                                     const val = parseInt(e.target.value)
                                     setManualOverrides(prev => ({
-                                      ...prev, [match.id]: { ...(prev[match.id] || { home:0, away:0 }), away: isNaN(val) ? 0 : val }
+                                      ...prev, [match.id]: { ...(prev[match.id] || { home: '', away: '' }), away: isNaN(val) ? '' : val }
                                     }))
                                   }}
                                   className="w-10 sm:w-12 shrink-0 rounded border bg-card px-1 py-1.5 sm:py-1 text-center font-mono text-sm focus:outline-none focus:ring-1 focus:ring-accent mr-auto"
