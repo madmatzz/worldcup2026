@@ -47,6 +47,14 @@ export function flagUrl(flag: string, size: 80 | 160 = 160) {
 
 // --- Shared bracket types (returned by /api/bracket) ---
 
+export type TeamStats = {
+  possession: string | null
+  shotsOnTarget: string | null
+  totalShots: string | null
+  fouls: string | null
+  corners: string | null
+}
+
 export type MatchTeam = {
   abbr: string
   name: string
@@ -54,6 +62,7 @@ export type MatchTeam = {
   score: number | null
   pens: number | null
   winner: boolean
+  stats?: TeamStats
 }
 
 export type MatchEvent = {

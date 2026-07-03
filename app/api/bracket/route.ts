@@ -26,6 +26,24 @@ function parseTeam(competitor: any): MatchTeam | null {
   const info = TEAM_INFO[abbr]
   // Placeholder slots (e.g. "RD32", "QFW1") are not real teams yet
   if (!info) return null
+
+  let stats: MatchTeam['stats'] = undefined
+  if (competitor.statistics && Array.isArray(competitor.statistics)) {
+    const getStat = (name: string) => {
+      const s = competitor.statistics.find((x: any) => x.name === name)
+      return s ? s.displayValue : null
+    }
+    
+    const poss = getStat('possessionPct')
+    stats = {
+      possession: poss ? String(Math.round(Number(poss))) : null,
+      shotsOnTarget: getStat('shotsOnTarget'),
+      totalShots: getStat('totalShots'),
+      fouls: getStat('foulsCommitted'),
+      corners: getStat('wonCorners'),
+    }
+  }
+
   return {
     abbr,
     name: info.name,
@@ -36,6 +54,7 @@ function parseTeam(competitor: any): MatchTeam | null {
         : null,
     pens: competitor.shootoutScore ?? null,
     winner: Boolean(competitor.winner),
+    stats,
   }
 }
 

@@ -42,6 +42,13 @@ const translations = {
       extraTime2: '2nd Extra Time',
       penalties: 'Penalties'
     },
+    stats: {
+      possession: 'Possession',
+      shotsOnTarget: 'Shots on target',
+      totalShots: 'Total shots',
+      fouls: 'Fouls',
+      corners: 'Corners'
+    },
     // Team names
     teams: {
       CAN: 'Canada',
@@ -118,6 +125,13 @@ const translations = {
       extraTime1: '1ra Prórroga',
       extraTime2: '2da Prórroga',
       penalties: 'Penales'
+    },
+    stats: {
+      possession: 'Posesión',
+      shotsOnTarget: 'Tiros al arco',
+      totalShots: 'Tiros totales',
+      fouls: 'Faltas',
+      corners: 'Córners'
     },
     teams: {
       CAN: 'Canadá',

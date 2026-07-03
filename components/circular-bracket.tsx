@@ -907,6 +907,51 @@ export function CircularBracket() {
             </p>
           )}
 
+          {/* Stats */}
+          {(selected.home?.stats || selected.away?.stats) && (
+            <div className="mt-4 border-t border-border pt-3">
+              <div className="flex flex-col gap-2.5">
+                {[
+                  { label: t.stats.possession, key: 'possession', unit: '%' },
+                  { label: t.stats.totalShots, key: 'totalShots' },
+                  { label: t.stats.shotsOnTarget, key: 'shotsOnTarget' },
+                  { label: t.stats.corners, key: 'corners' },
+                  { label: t.stats.fouls, key: 'fouls' },
+                ].map((stat, i) => {
+                  // @ts-ignore - dynamic key access
+                  const hVal = selected.home?.stats?.[stat.key]
+                  // @ts-ignore - dynamic key access
+                  const aVal = selected.away?.stats?.[stat.key]
+                  if (hVal == null && aVal == null) return null
+                  
+                  const hNum = Number(hVal || 0)
+                  const aNum = Number(aVal || 0)
+                  const total = hNum + aNum
+                  const hPct = total > 0 ? (hNum / total) * 100 : 50
+                  const aPct = total > 0 ? (aNum / total) * 100 : 50
+                  
+                  return (
+                    <div key={i} className="flex flex-col gap-1.5 text-xs">
+                      <div className="flex justify-between font-medium text-foreground">
+                        <span className="w-10 tabular-nums">{hVal ?? '-'}{stat.unit && hVal ? stat.unit : ''}</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{stat.label}</span>
+                        <span className="w-10 text-right tabular-nums">{aVal ?? '-'}{stat.unit && aVal ? stat.unit : ''}</span>
+                      </div>
+                      <div className="flex h-1.5 w-full gap-1">
+                        <div className="flex h-full flex-1 justify-end overflow-hidden rounded-l-full bg-muted">
+                          <div className="bg-foreground transition-all duration-500" style={{ width: `${hPct}%` }} />
+                        </div>
+                        <div className="flex h-full flex-1 overflow-hidden rounded-r-full bg-muted">
+                          <div className="bg-muted-foreground transition-all duration-500" style={{ width: `${aPct}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Events timeline */}
           {selected.events.length > 0 && (
             <div className="mt-4 border-t border-border pt-3">
