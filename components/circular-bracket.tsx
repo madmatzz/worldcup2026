@@ -758,27 +758,33 @@ export function CircularBracket() {
                           const pensStr = hasScore && match.home?.pens != null && match.away?.pens != null ? ` (${match.home.pens}-${match.away.pens}p)` : ''
 
                           const tooltipContent = (
-                            <div className="flex items-center gap-2">
-                              <span>
-                                {match.home ? displayTeamName(match.home, locale, t.tbd) : t.tbd}
-                                {hasScore ? <span className="mx-1.5 font-mono font-bold tabular-nums text-muted-foreground">{scoreStr}{pensStr}</span> : <span className="mx-1.5 text-muted-foreground">vs</span>}
-                                {match.away ? displayTeamName(match.away, locale, t.tbd) : t.tbd}
-                              </span>
-                              {isLive && (periodText || showClock) && (
-                                <span className="flex items-center gap-1.5 border-l border-border/40 pl-2">
-                                  {periodText && (
-                                    <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
-                                      {periodText}
-                                    </span>
-                                  )}
-                                  {showClock && (
-                                    <span className="flex items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-green-500/90 font-mono tracking-tight animate-pulse">
-                                      <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                      {match.clock}
-                                    </span>
-                                  )}
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <span>
+                                  {match.home ? displayTeamName(match.home, locale, t.tbd) : t.tbd}
+                                  {hasScore ? <span className="mx-1.5 font-mono font-bold tabular-nums text-muted-foreground">{scoreStr}{pensStr}</span> : <span className="mx-1.5 text-muted-foreground">vs</span>}
+                                  {match.away ? displayTeamName(match.away, locale, t.tbd) : t.tbd}
                                 </span>
-                              )}
+                                {isLive && (periodText || showClock) && (
+                                  <span className="flex items-center gap-1.5 border-l border-border/40 pl-2">
+                                    {periodText && (
+                                      <span className="rounded bg-green-500/15 px-1.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
+                                        {periodText}
+                                      </span>
+                                    )}
+                                    {showClock && (
+                                      <span className="flex items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-green-500/90 font-mono tracking-tight animate-pulse">
+                                        <svg className="w-2.5 h-2.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        {match.clock}
+                                      </span>
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                                <span>{formatKickoff(match.date, locale, userTimezone || undefined)}</span>
+                                {match.status === 'finished' && <span>{match.statusText}</span>}
+                              </div>
                             </div>
                           )
 
