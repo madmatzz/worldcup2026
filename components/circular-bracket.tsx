@@ -12,6 +12,7 @@ import {
 } from '@/lib/teams'
 import { detectLocale, getTranslations, teamName, type Locale } from '@/lib/i18n'
 import { ChampionCelebration } from './champion-celebration'
+import { PollCard } from './poll-card'
 
 const REFRESH_MS = 5_000
 const SIZE = 1000
@@ -1121,22 +1122,10 @@ export function CircularBracket() {
         </section>
       )}
 
-      {/* Legend */}
-      <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-        {t.roundLabels.map((label, i) => (
-          <li key={label} className="flex items-center gap-2">
-            <span
-              className="rounded-full bg-muted"
-              style={{
-                width: `${NODE_RADII[i] * 0.5}px`,
-                height: `${NODE_RADII[i] * 0.5}px`,
-              }}
-              aria-hidden="true"
-            />
-            <span className="text-xs text-muted-foreground">{label}</span>
-          </li>
-        ))}
-      </ul>
+
+      <div className="mt-2 w-full px-4">
+        <PollCard eliminatedTeams={eliminatedTeams} locale={locale} />
+      </div>
 
       {/* Settings Footer */}
       <footer className="mt-8 flex w-full flex-wrap items-center justify-center gap-6 border-t border-border/40 pt-4 pb-2">

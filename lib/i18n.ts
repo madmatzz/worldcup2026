@@ -42,12 +42,23 @@ const translations = {
       extraTime2: '2nd Extra Time',
       penalties: 'Penalties'
     },
-    stats: {
+      stats: {
       possession: 'Possession',
       shotsOnTarget: 'Shots on target',
       totalShots: 'Total shots',
       fouls: 'Fouls',
       corners: 'Corners'
+    },
+    poll: {
+      question: 'Who do you think will win the World Cup?',
+      subtitle: 'Cast your vote and discover the fan favorites to lift the cup!',
+      thanks: 'Thanks for your vote!',
+      vote: 'vote',
+      votes: 'votes',
+      you: 'You',
+      nobody: 'Nobody has voted yet.',
+      error: 'Error loading poll. Make sure to configure Vercel KV.',
+      errorAlert: 'Error saving vote. Check the console or make sure you restarted the server to load .env.local'
     },
     // Team names
     teams: {
@@ -89,25 +100,25 @@ const translations = {
     pageTitle: 'Copa del Mundo FIFA 2026',
     liveData: 'Datos en vivo',
     liveDataUnavailable: 'Datos en vivo no disponibles — reintentando…',
-    matchesLeftToday: (n: number) => `Restan ${n} partido${n !== 1 ? 's' : ''} hoy`,
-    allMatchesFinished: 'Todos los partidos de hoy finalizaron',
+    matchesLeftToday: (n: number) => `Quedan ${n} partido${n !== 1 ? 's' : ''} hoy`,
+    allMatchesFinished: 'Ya terminaron todos los partidos de hoy',
     noMatchesToday: 'No hay partidos programados para hoy',
     liveMatchNotice: (n: number) => `${n} partido${n !== 1 ? 's' : ''} en vivo ahora`,
     matchesInPlay: (n: number) => `${n} partido${n !== 1 ? 's' : ''} en juego`,
     matchesToday: 'Partidos de Hoy',
-    simulateMatches: 'Simulación Aleatoria',
-    reSimulateMatches: 'Resimular',
-    clearSimulation: 'Limpiar',
+    simulateMatches: 'Simulación al azar',
+    reSimulateMatches: 'Volver a simular',
+    clearSimulation: 'Borrar',
     manualMode: 'Simulación Manual',
     exitManual: 'Salir de Manual',
-    enterScore: 'Ingresar resultado',
-    randomScores: 'Resultados Aleatorios',
-    fillAllMatchesWarning: 'Rellená todos los resultados para ver el gráfico completo',
+    enterScore: 'Cargar resultado',
+    randomScores: 'Resultados Random',
+    fillAllMatchesWarning: 'Completá todos los partidos para ver la llave entera',
     close: 'Cerrar',
     tbd: 'A definir',
     live: 'En vivo',
-    stadiumTime: 'Hora local del estadio',
-    yourLocalTime: 'Tu hora local',
+    stadiumTime: 'Hora del estadio',
+    yourLocalTime: 'Tu hora',
     language: 'Idioma',
     timezone: 'Zona Horaria',
     roundLabels: [
@@ -121,9 +132,9 @@ const translations = {
       firstHalf: '1er Tiempo',
       secondHalf: '2do Tiempo',
       halftime: 'Entretiempo',
-      fulltime: 'Finalizado',
-      extraTime1: '1ra Prórroga',
-      extraTime2: '2da Prórroga',
+      fulltime: 'Terminado',
+      extraTime1: '1er Alargue',
+      extraTime2: '2do Alargue',
       penalties: 'Penales'
     },
     stats: {
@@ -132,6 +143,17 @@ const translations = {
       totalShots: 'Tiros totales',
       fouls: 'Faltas',
       corners: 'Córners'
+    },
+    poll: {
+      question: '¿Quién creés que va a ganar el Mundial?',
+      subtitle: '¡Dejá tu voto y descubrí cuáles son los favoritos para levantar la copa!',
+      thanks: '¡Gracias por tu voto!',
+      vote: 'voto',
+      votes: 'votos',
+      you: 'Vos',
+      nobody: 'Nadie votó todavía.',
+      error: 'Error cargando encuesta. Asegurate de configurar Vercel KV.',
+      errorAlert: 'Error al guardar el voto. Fijate en la consola o asegurate de haber reiniciado el servidor para que cargue el .env.local'
     },
     teams: {
       CAN: 'Canadá',
