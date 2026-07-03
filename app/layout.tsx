@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     'A live-simulated circular World Cup knockout bracket that refreshes every minute.',
   generator: 'v0.app',
   icons: {
-    icon: '/images/trophy.png',
-    apple: '/images/trophy.png',
+    icon: '/favicon.jpg',
+    apple: '/favicon.jpg',
   },
 }
 
