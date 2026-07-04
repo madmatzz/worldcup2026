@@ -415,11 +415,19 @@ export async function GET() {
             // Crucial: Propagate real API mock winners if they exist.
             // This ensures that even if we had to use a fallback match, the actual winners
             // of the child matches correctly advance to the next round in our visual tree.
+            // BUT: only overwrite the parent's team data if the parent doesn't already have
+            // real score data from ESPN (i.e., the match is already live or finished with scores).
             const homeWinner = childHome?.status === 'finished' ? (childHome.home?.winner ? childHome.home : (childHome.away?.winner ? childHome.away : null)) : null
             const awayWinner = childAway?.status === 'finished' ? (childAway.home?.winner ? childAway.home : (childAway.away?.winner ? childAway.away : null)) : null
             
-            if (homeWinner) parentMatch.home = { ...homeWinner, winner: false, score: null, pens: null, stats: undefined }
-            if (awayWinner) parentMatch.away = { ...awayWinner, winner: false, score: null, pens: null, stats: undefined }
+            const parentHasRealData = parentMatch.status !== 'scheduled' && (parentMatch.home?.score != null || parentMatch.away?.score != null)
+            
+            if (homeWinner && !parentHasRealData) {
+              parentMatch.home = { ...homeWinner, winner: false, score: null, pens: null, stats: undefined }
+            }
+            if (awayWinner && !parentHasRealData) {
+              parentMatch.away = { ...awayWinner, winner: false, score: null, pens: null, stats: undefined }
+            }
             
             customRounds[r].push(parentMatch)
           }
