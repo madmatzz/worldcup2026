@@ -10,6 +10,14 @@ import {
 const ESPN_URL =
   'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260628-20260720'
 
+declare global {
+  var __halftimeStarts: Record<string, number> | undefined
+}
+const halftimeStarts: Record<string, number> = globalThis.__halftimeStarts || {}
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.__halftimeStarts = halftimeStarts
+}
+
 // slug -> round index (0 = Round of 32 ... 4 = Final)
 function roundIndex(slug: string, isThirdPlace: boolean): number | null {
   if (isThirdPlace) return null
@@ -132,6 +140,14 @@ function parseEvent(event: any): { round: number | null; match: BracketMatch } {
     venue,
     events: parseEvents(comp.details),
   }
+
+  if (match.statusName === 'STATUS_HALFTIME') {
+    if (!halftimeStarts[match.id]) halftimeStarts[match.id] = Date.now()
+    match.halftimeStartedAt = halftimeStarts[match.id]
+  } else {
+    delete halftimeStarts[match.id]
+  }
+
   return { round: roundIndex(slug, isThirdPlace), match }
 }
 

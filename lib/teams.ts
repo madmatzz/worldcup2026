@@ -91,6 +91,7 @@ export type BracketMatch = {
   note: string | null // e.g. "Paraguay advance 4-3 on penalties"
   venue: string | null   // e.g. "SoFi Stadium, Inglewood, California"
   events: MatchEvent[]
+  halftimeStartedAt?: number
 }
 
 export type BracketData = {

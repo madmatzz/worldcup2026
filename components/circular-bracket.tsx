@@ -98,26 +98,23 @@ function displayTeamName(team: MatchTeam | null, locale: Locale, tbd: string): s
   return teamName(locale, team.abbr, team.name)
 }
 
-const halftimeStarts: Record<string, number> = {}
-
-function HalftimeCountdown({ matchId }: { matchId: string }) {
+function HalftimeCountdown({ startedAt }: { startedAt?: number }) {
   const [timeLeft, setTimeLeft] = useState(() => {
-    if (!halftimeStarts[matchId]) {
-      halftimeStarts[matchId] = Date.now()
-    }
-    const elapsed = Math.floor((Date.now() - halftimeStarts[matchId]) / 1000)
-    return Math.max(0, 15 * 60 - elapsed)
+    if (!startedAt) return 14 * 60 + 30
+    const elapsed = Math.floor((Date.now() - startedAt) / 1000)
+    return Math.max(0, 14 * 60 + 30 - elapsed)
   })
   
   useEffect(() => {
+    if (!startedAt) return
     const timer = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - halftimeStarts[matchId]) / 1000)
-      const remaining = Math.max(0, 15 * 60 - elapsed)
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000)
+      const remaining = Math.max(0, 14 * 60 + 30 - elapsed)
       setTimeLeft(remaining)
       if (remaining === 0) clearInterval(timer)
     }, 1000)
     return () => clearInterval(timer)
-  }, [matchId])
+  }, [startedAt])
   
   if (timeLeft === 0) return null
   
@@ -925,7 +922,7 @@ export function CircularBracket() {
                           </span>
                         )}
                         {selected.statusName === 'STATUS_HALFTIME' && (
-                          <HalftimeCountdown matchId={selected.id} />
+                          <HalftimeCountdown startedAt={selected.halftimeStartedAt} />
                         )}
                       </div>
                     )}
