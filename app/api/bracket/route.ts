@@ -316,10 +316,18 @@ export async function GET() {
     // --- CUSTOM VISUAL OVERRIDE FOR WORLD CUP MOCK ---
     if (valid) {
       const CUSTOM_R32 = [
-        ['BRA', 'JPN'], ['CIV', 'NOR'], ['MEX', 'ECU'], ['ENG', 'COD'],
-        ['SUI', 'ALG'], ['ARG', 'CPV'], ['AUS', 'EGY'], ['COL', 'GHA'],
-        ['SEN', 'BEL'], ['BIH', 'USA'], ['AUT', 'ESP'], ['CRO', 'POR'],
-        ['MAR', 'NED'], ['CAN', 'RSA'], ['SWE', 'FRA'], ['PAR', 'GER']
+        // QF bracket 1 (top): R16-1 (Paraguay vs France) + R16-2 (Canada vs Morocco) → SF top
+        ['GER', 'PAR'], ['FRA', 'SWE'],   // → R16-1: Paraguay vs France
+        ['RSA', 'CAN'], ['NED', 'MAR'],   // → R16-2: Canada vs Morocco
+        // QF bracket 2: R16-5 (Portugal vs Spain) + R16-6 (USA vs Belgium) → SF top
+        ['POR', 'CRO'], ['ESP', 'AUT'],   // → R16-5: Portugal vs Spain
+        ['USA', 'BIH'], ['BEL', 'SEN'],   // → R16-6: USA vs Belgium
+        // QF bracket 3: R16-3 (Brazil vs Norway) + R16-4 (Mexico vs England) → SF bottom
+        ['BRA', 'JPN'], ['CIV', 'NOR'],   // → R16-3: Brazil vs Norway
+        ['MEX', 'ECU'], ['ENG', 'COD'],   // → R16-4: Mexico vs England
+        // QF bracket 4 (bottom): R16-7 (Argentina vs Egypt) + R16-8 (Switzerland vs ?) → SF bottom
+        ['ARG', 'CPV'], ['AUS', 'EGY'],   // → R16-7: Argentina vs Egypt
+        ['SUI', 'ALG'], ['COL', 'GHA'],   // → R16-8: Switzerland vs RD32 W15
       ]
       
       const customRounds: BracketMatch[][] = [[], [], [], [], []]
