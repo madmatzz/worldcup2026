@@ -90,12 +90,12 @@ function parseEvents(details: any[]): MatchEvent[] {
     .filter(Boolean) as MatchEvent[]
 }
 
-function parseEvent(event: any): { round: number | null; match: BracketMatch } {
+function parseEvent(event: any): { round: number | null; match: BracketMatch; isThirdPlace: boolean } {
   const comp = event.competitions[0]
   const slug: string = event.season?.slug ?? ''
   const name: string = (event.name ?? '').toLowerCase()
   const isThirdPlace =
-    slug.includes('third') || name.includes('third place')
+    slug.includes('third') || slug.includes('3rd') || name.includes('third place') || name.includes('3er') || name.includes('3rd')
 
   const competitors: any[] = comp.competitors ?? []
   const home = competitors.find((c) => c.homeAway === 'home') ?? competitors[0]
@@ -148,7 +148,7 @@ function parseEvent(event: any): { round: number | null; match: BracketMatch } {
     delete halftimeStarts[match.id]
   }
 
-  return { round: roundIndex(slug, isThirdPlace), match }
+  return { round: roundIndex(slug, isThirdPlace), match, isThirdPlace }
 }
 
 // Round labels used by ESPN in their placeholder display names
@@ -319,9 +319,11 @@ export async function GET() {
     const data = await res.json()
 
     const rounds: BracketMatch[][] = [[], [], [], [], []]
+    let thirdPlace: BracketMatch | null = null
     for (const event of data.events ?? []) {
-      const { round, match } = parseEvent(event)
+      const { round, match, isThirdPlace } = parseEvent(event)
       if (round !== null) rounds[round].push(match)
+      if (isThirdPlace) thirdPlace = match
     }
 
     // Sanity check: expected 16 / 8 / 4 / 2 / 1
@@ -462,6 +464,7 @@ export async function GET() {
       updatedAt: new Date().toISOString(),
       rounds: orderedRounds,
       champion,
+      thirdPlace,
     }
     return NextResponse.json(payload)
   } catch (err) {

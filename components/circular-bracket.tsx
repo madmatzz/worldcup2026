@@ -269,6 +269,7 @@ export function CircularBracket() {
 
   const selected = useMemo(() => {
     if (!selectedId || !activeData) return null
+    if (activeData.thirdPlace?.id === selectedId) return activeData.thirdPlace
     for (const round of activeData.rounds) {
       const match = round.find((m) => m.id === selectedId)
       if (match) return match
@@ -307,7 +308,9 @@ export function CircularBracket() {
     const tz = userTimezone || 'UTC'
     try {
       const nowStr = new Date().toLocaleDateString('en-US', { timeZone: tz })
-      const allMatches = activeData.rounds.flat()
+      const allMatches = activeData.thirdPlace 
+        ? [...activeData.rounds.flat(), activeData.thirdPlace]
+        : activeData.rounds.flat()
       return allMatches.filter(m => {
         const matchStr = new Date(m.date).toLocaleDateString('en-US', { timeZone: tz })
         return matchStr === nowStr
@@ -322,7 +325,9 @@ export function CircularBracket() {
     const tz = userTimezone || 'UTC'
     try {
       const viewStr = viewDate.toLocaleDateString('en-US', { timeZone: tz })
-      const allMatches = activeData.rounds.flat()
+      const allMatches = activeData.thirdPlace 
+        ? [...activeData.rounds.flat(), activeData.thirdPlace]
+        : activeData.rounds.flat()
       return allMatches.filter(m => {
         const matchStr = new Date(m.date).toLocaleDateString('en-US', { timeZone: tz })
         return matchStr === viewStr
@@ -487,7 +492,8 @@ export function CircularBracket() {
     return { connectors }
   }, [])
 
-  const liveCount = activeData?.rounds.flat().filter((m) => m.status === 'live').length ?? 0
+  const allMatchFlat = useMemo(() => activeData ? (activeData.thirdPlace ? [...activeData.rounds.flat(), activeData.thirdPlace] : activeData.rounds.flat()) : [], [activeData])
+  const liveCount = allMatchFlat.filter((m) => m.status === 'live').length
 
   const todayStatusElement = useMemo(() => {
     if (!activeData || !userTimezone) return null
@@ -496,7 +502,7 @@ export function CircularBracket() {
     const upcomingCount = todayMatches.filter(m => m.status === 'scheduled').length
 
     if (liveCount > 0) {
-      const firstLive = activeData.rounds.flat().find((m) => m.status === 'live')
+      const firstLive = allMatchFlat.find((m) => m.status === 'live')
       return (
         <button 
           type="button"

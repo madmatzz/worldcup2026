@@ -99,4 +99,5 @@ export type BracketData = {
   // rounds[0] = 16 Round-of-32 matches ... rounds[4] = [final]
   rounds: BracketMatch[][]
   champion: MatchTeam | null
+  thirdPlace?: BracketMatch | null
 }
